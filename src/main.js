@@ -3,16 +3,24 @@ import { initGlobe } from './globe/globe.js';
 import { initUI, openPostcardModal } from './ui.js';
 
 const gameModules = import.meta.glob('./data/games/*/game.json', { eager: true });
-const imageModules = import.meta.glob('./data/games/*/*.{jpg,jpeg,png,webp}', { eager: true, import: 'default' });
+// Use recursive glob (**) to catch images in subdirectories
+const imageModules = import.meta.glob('./data/games/**/*.{jpg,jpeg,png,webp}', { eager: true, import: 'default' });
 
 const gamesCatalog = Object.values(gameModules).map(mod => mod.default);
 
 function resolvePhoto(gameId, photoPath) {
-  if (photoPath && (photoPath.startsWith('http://') || photoPath.startsWith('https://'))) {
+  if (!photoPath) {
+    return `${import.meta.env.BASE_URL}textures/default-dispatch.jpg`;
+  }
+  if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
     return photoPath;
   }
-  const localKey = `./data/games/${gameId}/${photoPath}`;
-  return imageModules[localKey] || '/textures/default-dispatch.jpg';
+  // Strip any leading slash from JSON photo paths
+  const cleanPath = photoPath.startsWith('/') ? photoPath.slice(1) : photoPath;
+  const localKey = `./data/games/${gameId}/${cleanPath}`;
+
+  // Fallback uses import.meta.env.BASE_URL so it resolves under /repo-name/
+  return imageModules[localKey] || `${import.meta.env.BASE_URL}textures/default-dispatch.jpg`;
 }
 
 const allLocations = gamesCatalog.flatMap(game => 
