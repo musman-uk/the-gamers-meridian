@@ -24,10 +24,10 @@
       </div>
 
       <button id="albumToggle" class="journal-toggle-btn w-fit">
-        <i class="fa-solid fa-book-bookmark text-amber-400 text-xs sm:text-sm"></i>
+        <i class="fa-solid fa-book-bookmark journal-accent text-xs sm:text-sm"></i>
         <div class="flex flex-col text-left">
-          <span class="text-[8px] font-mono text-amber-200/80 uppercase tracking-widest leading-none">EXPLORER'S ALBUM</span>
-          <span class="text-xs font-bold text-amber-100 font-cinzel tracking-wide">Travel Journal</span>
+          <span class="text-[8px] font-mono journal-text-muted uppercase tracking-widest leading-none">EXPLORER'S ALBUM</span>
+          <span class="text-xs font-bold journal-text font-cinzel tracking-wide">Travel Journal</span>
         </div>
       </button>
     </div>
@@ -44,22 +44,22 @@
 
   <aside id="bookletDrawer" class="booklet-drawer flex flex-col justify-between p-5 sm:p-6">
     <div>
-      <div class="flex items-center justify-between pb-3 border-b border-amber-900/40">
+      <div class="flex items-center justify-between pb-3 border-b journal-border">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-book-open text-amber-400 text-lg"></i>
-          <h2 class="text-base sm:text-lg font-bold font-cinzel text-amber-100 tracking-wide">Travel Journal</h2>
+          <i class="fa-solid fa-book-open journal-accent text-lg"></i>
+          <h2 class="text-base sm:text-lg font-bold font-cinzel journal-text tracking-wide">Travel Journal</h2>
         </div>
         <button id="drawerClose" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors">&times;</button>
       </div>
 
-      <p class="text-xs text-amber-200/70 my-3 leading-relaxed font-postcard-type">
+      <p class="text-xs journal-text-muted my-3 leading-relaxed font-postcard-type">
         Browse bound explorer volumes. Select a location log to open its dispatch card and glide the globe directly to its coordinates.
       </p>
 
       <div id="gameVolumesList" class="scrollable-panel max-h-[calc(100vh-220px)] pr-1"></div>
     </div>
 
-    <div class="pt-3 border-t border-amber-900/30 text-[10px] text-amber-300/50 font-mono flex justify-between">
+    <div class="pt-3 border-t journal-border text-[10px] journal-accent font-mono flex justify-between">
       <span>EXPEDITION RECORDS</span>
       <span>17 DISPATCH LOGS</span>
     </div>
@@ -69,13 +69,13 @@
     <div class="glass-panel p-6 sm:p-8 rounded-2xl max-w-lg w-[90%] relative shadow-2xl border border-white/20">
       <button id="stampClose" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors" aria-label="Close modal">&times;</button>
       <div class="flex items-center gap-2 mb-3">
-        <span class="text-amber-400 text-lg">✦</span>
+        <span class="journal-accent text-lg">✦</span>
         <h2 class="text-lg font-bold font-cinzel text-white">Sender's Stamp</h2>
       </div>
       <div class="text-xs sm:text-sm text-slate-300 space-y-3 leading-relaxed">
         <p>
           <strong class="text-white">Global Postcard</strong> is an interactive travel record anchoring virtual world settings from 
-          <em class="text-amber-300">Assassin's Creed (1 & 2)</em> and <em class="text-sky-300">Uncharted (1 & 2)</em> onto real Earth coordinates.
+          <em class="journal-accent">Assassin's Creed (1 & 2)</em> and <em class="journal-accent">Uncharted (1 & 2)</em> onto real Earth coordinates.
         </p>
         <p>
           Each card uses a <strong>Dual-Tier Location Schema</strong>: presenting game-era setting names 
@@ -84,7 +84,7 @@
       </div>
       <div class="mt-6 pt-4 border-t border-dashed border-white/15 flex justify-between items-center text-xs">
         <span class="text-slate-400 font-mono text-[10px]">COLLECTOR'S FIELD NOTE</span>
-        <span class="text-amber-400 font-bold font-cinzel">1191–1499 / MODERN</span>
+        <span class="journal-accent font-bold font-cinzel">1191–1499 / MODERN</span>
       </div>
     </div>
   </div>
@@ -93,7 +93,7 @@
     <div id="postcardWrapper" class="relative w-full max-w-3xl scale-75 transition-transform duration-500 ease-out flex flex-col items-center">
       
       <div class="w-full flex justify-between items-center mb-3 px-2">
-        <button id="btnFlipCard" class="glass-button px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 text-sky-300 hover:text-white shadow-xl">
+        <button id="btnFlipCard" class="glass-button px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 journal-accent hover:text-white shadow-xl">
           <i class="fa-solid fa-rotate"></i>
           <span>Flip Postcard 180°</span>
         </button>
@@ -110,7 +110,7 @@
               <img id="pcFrontImg" src="" alt="Location View" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
               <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent"></div>
               
-              <div id="pcGameBadge" class="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-[10px] font-bold uppercase tracking-widest text-sky-400">
+              <div id="pcGameBadge" class="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-[10px] font-bold uppercase tracking-widest journal-accent">
                 GAME TITLE
               </div>
 
@@ -125,7 +125,7 @@
                   <p id="pcTagline" class="text-xs sm:text-sm text-slate-200 font-medium drop-shadow mt-0.5">Field Dispatch</p>
                 </div>
                 <div class="hidden sm:block text-right">
-                  <span class="inline-block px-3 py-1 bg-sky-600/90 text-white rounded-lg text-xs font-bold tracking-wider shadow">
+                  <span class="inline-block px-3 py-1 glass-button text-white rounded-lg text-xs font-bold tracking-wider shadow">
                     FLIP CARD ➔
                   </span>
                 </div>
@@ -141,7 +141,7 @@
 
             <div class="flex justify-between items-start border-b-2 border-slate-300 pb-1.5 card-header-bar">
               <div class="space-y-0.5">
-                <span class="text-[8px] font-bold uppercase tracking-widest text-amber-900 font-postcard-type">FIELD DISPATCH NOTES</span>
+                <span class="text-[8px] font-bold uppercase tracking-widest text-slate-600 font-postcard-type">FIELD DISPATCH NOTES</span>
                 <h3 id="pcBackCity" class="text-base sm:text-2xl font-cinzel font-bold text-slate-900 leading-tight">LOCATION NAME</h3>
                 <span id="pcSettingHeader" class="text-[10px] sm:text-[11px] font-postcard-type font-semibold text-slate-600 block">Dispatch Location</span>
               </div>
@@ -168,13 +168,13 @@
                   </p>
                 </div>
                 <div class="text-right pt-1">
-                  <span id="pcQuoteContext" class="font-postcard-type text-[9px] sm:text-[9.5px] text-amber-900 font-bold block italic">Context tag</span>
+                  <span id="pcQuoteContext" class="font-postcard-type text-[9px] sm:text-[9.5px] text-slate-700 font-bold block italic">Context tag</span>
                 </div>
               </div>
 
               <div class="col-span-12 sm:col-span-5 space-y-1.5 font-postcard-type text-[9.5px] sm:text-xs text-slate-800 flex flex-col justify-center">
-                <div class="bg-amber-500/10 p-1.5 sm:p-2 rounded border border-amber-800/20">
-                  <span class="font-bold text-amber-900 block text-[8px] uppercase tracking-wider mb-0.5">ZONE 2 • SPATIAL TRIVIA</span>
+                <div class="bg-slate-200/60 p-1.5 sm:p-2 rounded border border-slate-300">
+                  <span class="font-bold text-slate-900 block text-[8px] uppercase tracking-wider mb-0.5">ZONE 2 • SPATIAL TRIVIA</span>
                   <span id="pcSpatialNote" class="text-[9px] sm:text-[9.5px] leading-snug block text-slate-700">Spatial note details...</span>
                 </div>
 
@@ -187,7 +187,7 @@
                   </div>
                   <div class="flex justify-between">
                     <span class="text-slate-500">Setting Era:</span>
-                    <span id="pcMetaEra" class="font-bold text-amber-900 text-right">Era</span>
+                    <span id="pcMetaEra" class="font-bold text-slate-900 text-right">Era</span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-slate-500">Real-World:</span>
