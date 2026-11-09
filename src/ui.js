@@ -68,13 +68,13 @@ function buildTravelJournalDrawer(gamesCatalog, onFlyToLocation) {
     vol.locations.forEach(loc => {
       if (loc.isRegion && loc.subLocations) {
         locItemsHtml += `
-          <div class="mt-2 pt-2 border-t border-amber-900/30">
-            <span class="text-[9px] font-mono text-amber-400/90 font-bold uppercase block px-2 mb-1">REGIONAL BOOKLET • ${loc.city.toUpperCase()}</span>
+          <div class="mt-2 pt-2 border-t journal-border">
+            <span class="text-[9px] font-mono journal-accent font-bold uppercase block px-2 mb-1">REGIONAL BOOKLET • ${loc.city.toUpperCase()}</span>
             <div class="space-y-1">
               ${loc.subLocations.map(sub => `
                 <button data-loc-id="${loc.id}" data-sub-id="${sub.id}" class="journal-entry-btn journal-fly-btn">
-                  <span class="text-xs font-semibold text-amber-100 font-postcard-type">✦ ${sub.city}</span>
-                  <span class="text-[9px] text-amber-300/60 font-mono">${sub.settingEra}</span>
+                  <span class="text-xs font-semibold journal-text font-postcard-type">✦ ${sub.city}</span>
+                  <span class="text-[9px] journal-text-muted font-mono">${sub.settingEra}</span>
                 </button>
               `).join('')}
             </div>
@@ -83,8 +83,8 @@ function buildTravelJournalDrawer(gamesCatalog, onFlyToLocation) {
       } else {
         locItemsHtml += `
           <button data-loc-id="${loc.id}" class="journal-entry-btn journal-fly-btn">
-            <span class="text-xs font-semibold text-amber-100 font-postcard-type">• ${loc.city}</span>
-            <span class="text-[9px] text-amber-300/60 font-mono">${loc.settingEra || 'Modern'}</span>
+            <span class="text-xs font-semibold journal-text font-postcard-type">• ${loc.city}</span>
+            <span class="text-[9px] journal-text-muted font-mono">${loc.settingEra || 'Modern'}</span>
           </button>
         `;
       }
@@ -94,10 +94,10 @@ function buildTravelJournalDrawer(gamesCatalog, onFlyToLocation) {
       <div class="journal-volume-header">
         <div>
           <span class="journal-volume-tag">${vol.volNum}</span>
-          <h3 class="text-sm font-bold text-amber-100 font-cinzel leading-snug">${vol.title}</h3>
-          <p class="text-[10px] text-amber-200/60 font-postcard-type">${vol.franchise}</p>
+          <h3 class="text-sm font-bold journal-text font-cinzel leading-snug">${vol.title}</h3>
+          <p class="text-[10px] journal-text-muted font-postcard-type">${vol.franchise}</p>
         </div>
-        <span class="text-[9px] px-2 py-0.5 rounded font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800/40">${vol.locations.length} LOGS</span>
+        <span class="text-[9px] px-2 py-0.5 rounded font-mono font-bold journal-card journal-accent border journal-border">${vol.locations.length} LOGS</span>
       </div>
       <div class="space-y-1">${locItemsHtml}</div>
     `;
@@ -206,7 +206,7 @@ function renderCardData(data) {
   document.getElementById('pcSettingHeader').textContent = `${data.dispatchLocation} • (${data.settingEra})`;
   document.getElementById('pcOriginSealEra').textContent = data.settingEra.split(' ')[0] || '1191 AD';
 
-  document.getElementById('pcStampIcon').className = `fa-solid ${data.icon || 'fa-landmark'} text-xs sm:text-sm mt-0.5 text-amber-300`;
+  document.getElementById('pcStampIcon').className = `fa-solid ${data.icon || 'fa-landmark'} text-xs sm:text-sm mt-0.5 journal-accent`;
   document.getElementById('pcStampValue').textContent = data.city.substring(0, 4).toUpperCase();
 
   document.getElementById('pcQuote').textContent = `"${data.quote}"`;
