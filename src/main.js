@@ -1,4 +1,3 @@
-import './assets/style.css';
 import { initGlobe } from './globe/globe.js';
 import { initUI, openPostcardModal } from './ui.js';
 
@@ -45,3 +44,5 @@ initUI(
   (locId, subId) => globeApi.flyToAndOpenLocation(locId, subId, (loc, sub) => openPostcardModal(loc, sub)),
   (isOpen) => globeApi.setModalState(isOpen)
 );
+
+document.documentElement.classList.remove('is-loading');

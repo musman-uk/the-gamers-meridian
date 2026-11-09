@@ -1,13 +1,24 @@
 @import "tailwindcss";
 
 :root {
+  /* Global Space Theme Variables */
   --bg-dark: #020617;
   --glass-bg: rgba(15, 23, 42, 0.85);
   --glass-border: rgba(255, 255, 255, 0.15);
-  --journal-bg: #1e1b18;
-  --journal-border: #3d3228;
-  --journal-paper: #f5efe0;
-  --journal-ink: #2b231d;
+  
+  /* Travel Journal & Side Drawer Variables */
+  --journal-bg: #090d16;
+  --journal-card-bg: #0f172a;
+  --journal-card-border: #1e293b;
+  --journal-entry-bg: #090d16;
+  --journal-accent: #38bdf8;
+  --journal-accent-hover: rgba(56, 189, 248, 0.15);
+  --journal-text-main: #f8fafc;
+  --journal-text-muted: #94a3b8;
+  
+  /* Postcard Overlay Base Variables */
+  --journal-paper: #0f172a;
+  --journal-ink: #f8fafc;
   --gold-accent: #d4af37;
 }
 
@@ -141,36 +152,54 @@ html, body {
   border-color: #38bdf8;
 }
 
+/* Journal Controls & Side Drawer Bound to Theme Variables */
 .journal-toggle-btn {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 7px 14px;
-  background: #1e1b18;
-  color: #f5efe0;
-  border: 1px solid #524336;
-  border-left: 4px solid #d4af37;
+  background: var(--journal-card-bg);
+  color: var(--journal-text-main);
+  border: 1px solid var(--journal-card-border);
+  border-left: 4px solid var(--journal-accent);
   border-radius: 6px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   cursor: pointer;
   transition: all 0.25s ease;
 }
 .journal-toggle-btn:hover {
-  background: #2a2521;
-  border-color: #d4af37;
+  background: var(--journal-card-border);
+  border-color: var(--journal-accent);
   transform: translateY(-2px);
 }
 
+.booklet-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(100vw, 420px);
+  z-index: 150;
+  background: var(--journal-bg);
+  border-right: 2px solid var(--journal-card-border);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 25px 0 60px rgba(0, 0, 0, 0.85);
+}
+.booklet-drawer.is-open {
+  transform: translateX(0);
+}
+
 .journal-volume-card {
-  background: #25201b;
-  border: 1px solid #44382d;
+  background: var(--journal-card-bg);
+  border: 1px solid var(--journal-card-border);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .journal-volume-header {
-  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.25);
   padding-bottom: 8px;
   margin-bottom: 8px;
   display: flex;
@@ -182,15 +211,15 @@ html, body {
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #d97706;
+  color: var(--journal-accent);
 }
 .journal-entry-btn {
   width: 100%;
   text-align: left;
   padding: 6px 10px;
   border-radius: 4px;
-  background: #1e1a17;
-  border: 1px solid #2d2621;
+  background: var(--journal-entry-bg);
+  border: 1px solid var(--journal-card-border);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -198,8 +227,8 @@ html, body {
   cursor: pointer;
 }
 .journal-entry-btn:hover {
-  background: rgba(180, 83, 9, 0.2);
-  border-color: #d4af37;
+  background: var(--journal-accent-hover);
+  border-color: var(--journal-accent);
 }
 
 .perspective-1500 { perspective: 1500px; }
@@ -233,23 +262,6 @@ html, body {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-}
-
-.booklet-drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: min(100vw, 420px);
-  z-index: 150;
-  background: #1c1815;
-  border-right: 2px solid #3d3228;
-  transform: translateX(-100%);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 25px 0 60px rgba(0, 0, 0, 0.85);
-}
-.booklet-drawer.is-open {
-  transform: translateX(0);
 }
 
 .sub-tab-btn {
