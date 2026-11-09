@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Global Postcard</title>
+
+  <style>
+    html.is-loading body {
+      opacity: 0;
+      pointer-events: none;
+    }
+    body {
+      background-color: #020617;
+      transition: opacity 0.4s ease-in-out;
+    }
+  </style>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
