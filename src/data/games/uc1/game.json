@@ -1,0 +1,40 @@
+{
+  "id": "u1",
+  "volNum": "VOLUME III",
+  "title": "El Dorado Expedition (Modern)",
+  "franchise": "Uncharted: Drake's Fortune",
+  "color": "#0284c7",
+  "themeClass": "theme-u1",
+  "locations": [
+    {
+      "id": "u1-amazon",
+      "city": "Amazon Basin",
+      "dispatchLocation": "Amazon Basin, South America",
+      "modernLocation": "Amazon Rainforest, Brazil",
+      "settingEra": "Modern Day (El Dorado Expedition)",
+      "coordinates": { "lat": -3.4653, "lng": -62.2159 },
+      "icon": "fa-compass",
+      "tagline": "Sunken German U-Boat & Jungle Canyon",
+      "quote": "There's a German U-boat in the middle of the Amazon jungle. Tell me that's not weird.",
+      "quoteContext": "Nathan Drake examining the river canyon wreckage",
+      "spatialNote": "Dense foliage layering and wet-surfaced stone physics inside jungle ravines.",
+      "photo": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1200&q=80",
+      "ref": "REF-U1-AMZ"
+    },
+    {
+      "id": "u1-island",
+      "city": "Pacific Island",
+      "dispatchLocation": "Uncharted Island, Pacific",
+      "modernLocation": "Pacific Ocean",
+      "settingEra": "Modern Day (El Dorado Expedition)",
+      "coordinates": { "lat": -14.235, "lng": -170.6823 },
+      "icon": "fa-skull-crossbones",
+      "tagline": "Spanish Colony Ruins & Custom House",
+      "quote": "Drake... we're sitting on a goldmine. Literally.",
+      "quoteContext": "Sully discovering the Golden Man in the island vault",
+      "spatialNote": "16th-century Spanish fortresses with subterranean bunker tunnels.",
+      "photo": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+      "ref": "REF-U1-ISL"
+    }
+  ]
+}

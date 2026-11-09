@@ -1,0 +1,70 @@
+{
+  "id": "ac1",
+  "volNum": "VOLUME I",
+  "title": "The Crusades (1191 AD)",
+  "franchise": "Assassin's Creed",
+  "color": "#d97706",
+  "themeClass": "theme-ac1",
+  "locations": [
+    {
+      "id": "ac1-masyaf",
+      "city": "Masyaf",
+      "dispatchLocation": "Masyaf, Holy Land",
+      "modernLocation": "Masyaf, Syria",
+      "settingEra": "1191 AD (Third Crusade)",
+      "coordinates": { "lat": 35.0645, "lng": 36.3413 },
+      "icon": "fa-fort-awesome",
+      "tagline": "Assassin Citadel & Mountain Stronghold",
+      "quote": "Where other men blindly follow the truth, remember, nothing is true.",
+      "quoteContext": "Al Mualim's counsel at the Masyaf Fortress, 1191 AD",
+      "spatialNote": "Sits atop a sheer limestone ridge, dramatically amplifying the verticality of the Leap of Faith.",
+      "photo": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80",
+      "ref": "REF-AC1-MSY"
+    },
+    {
+      "id": "ac1-jerusalem",
+      "city": "Jerusalem",
+      "dispatchLocation": "Jerusalem, Holy Land",
+      "modernLocation": "Jerusalem",
+      "settingEra": "1191 AD (Third Crusade)",
+      "coordinates": { "lat": 31.7767, "lng": 35.2345 },
+      "icon": "fa-archway",
+      "tagline": "Holy Land Citadel & Crusader Ramparts",
+      "quote": "Safety and peace, Malik.",
+      "quoteContext": "Altaïr Ibn-La'Ahad at the Jerusalem Bureau, 1191 AD",
+      "spatialNote": "Divided into distinct Christian, Jewish, and Muslim quarters framing the Dome of the Rock.",
+      "photo": "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1200&q=80",
+      "ref": "REF-AC1-JRM"
+    },
+    {
+      "id": "ac1-damascus",
+      "city": "Damascus",
+      "dispatchLocation": "Damascus, Holy Land",
+      "modernLocation": "Damascus, Syria",
+      "settingEra": "1191 AD (Third Crusade)",
+      "coordinates": { "lat": 33.5138, "lng": 36.2765 },
+      "icon": "fa-mosque",
+      "tagline": "Umayyad Minarets & Desert Bazaar",
+      "quote": "My blade will seek the heart of injustice.",
+      "quoteContext": "Overheard in the Merchant District of Damascus",
+      "spatialNote": "Reproduces the Umayyad Mosque layout surrounded by wooden-beamed souks optimized for parkour.",
+      "photo": "https://images.unsplash.com/photo-1578895210405-907db486c111?auto=format&fit=crop&w=1200&q=80",
+      "ref": "REF-AC1-DMS"
+    },
+    {
+      "id": "ac1-acre",
+      "city": "Acre",
+      "dispatchLocation": "Acre, Holy Land",
+      "modernLocation": "Akko, Israel",
+      "settingEra": "1191 AD (Third Crusade)",
+      "coordinates": { "lat": 32.9278, "lng": 35.0817 },
+      "icon": "fa-anchor",
+      "tagline": "Siege Ruins & Hospitaller Port",
+      "quote": "The Crusader siege left these walls broken, but our duty remains whole.",
+      "quoteContext": "Hospitaller Quarter Sentinel, 1191 AD",
+      "spatialNote": "Muted ash-blue palette with crumbling Crusader siege fortifications.",
+      "photo": "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1200&q=80",
+      "ref": "REF-AC1-ACR"
+    }
+  ]
+}
