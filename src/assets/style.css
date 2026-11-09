@@ -4,11 +4,11 @@
   --bg-dark: #020617;
   --glass-bg: rgba(15, 23, 42, 0.85);
   --glass-border: rgba(255, 255, 255, 0.15);
-  --journal-bg: #0b1329;
-  --journal-border: #1e293b;
-  --journal-paper: #0f172a;
-  --journal-ink: #f8fafc;
-  --space-accent: #38bdf8;
+  --journal-bg: #1e1b18;
+  --journal-border: #3d3228;
+  --journal-paper: #f5efe0;
+  --journal-ink: #2b231d;
+  --gold-accent: #d4af37;
 }
 
 html, body {
@@ -141,37 +141,36 @@ html, body {
   border-color: #38bdf8;
 }
 
-/* Space-themed Journal Controls & Drawer */
 .journal-toggle-btn {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 7px 14px;
-  background: #0f172a;
-  color: #f8fafc;
-  border: 1px solid #1e293b;
-  border-left: 4px solid #38bdf8;
+  background: #1e1b18;
+  color: #f5efe0;
+  border: 1px solid #524336;
+  border-left: 4px solid #d4af37;
   border-radius: 6px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   cursor: pointer;
   transition: all 0.25s ease;
 }
 .journal-toggle-btn:hover {
-  background: #1e293b;
-  border-color: #38bdf8;
+  background: #2a2521;
+  border-color: #d4af37;
   transform: translateY(-2px);
 }
 
 .journal-volume-card {
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  background: #25201b;
+  border: 1px solid #44382d;
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .journal-volume-header {
-  border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
   padding-bottom: 8px;
   margin-bottom: 8px;
   display: flex;
@@ -183,15 +182,15 @@ html, body {
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #38bdf8;
+  color: #d97706;
 }
 .journal-entry-btn {
   width: 100%;
   text-align: left;
   padding: 6px 10px;
   border-radius: 4px;
-  background: #090d16;
-  border: 1px solid #1e293b;
+  background: #1e1a17;
+  border: 1px solid #2d2621;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -199,8 +198,8 @@ html, body {
   cursor: pointer;
 }
 .journal-entry-btn:hover {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: #38bdf8;
+  background: rgba(180, 83, 9, 0.2);
+  border-color: #d4af37;
 }
 
 .perspective-1500 { perspective: 1500px; }
@@ -243,8 +242,8 @@ html, body {
   bottom: 0;
   width: min(100vw, 420px);
   z-index: 150;
-  background: #090d16;
-  border-right: 2px solid #1e293b;
+  background: #1c1815;
+  border-right: 2px solid #3d3228;
   transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 25px 0 60px rgba(0, 0, 0, 0.85);
