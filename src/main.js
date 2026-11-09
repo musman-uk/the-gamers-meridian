@@ -1,4 +1,3 @@
-import './assets/style.css';
 import { initGlobe } from './globe/globe.js';
 import { initUI, openPostcardModal } from './ui.js';
 
