@@ -5,10 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Global Postcard</title>
 
-  <style>
+ <style>
     html.is-loading body {
-      opacity: 0;
-      pointer-events: none;
+      background-color: #020617 !important;
+    }
+    html.is-loading header,
+    html.is-loading aside,
+    html.is-loading .modal-overlay,
+    html.is-loading #postcardModal {
+      display: none !important;
+      opacity: 0 !important;
     }
     body {
       background-color: #020617;
