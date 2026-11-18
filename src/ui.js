@@ -3,7 +3,7 @@ const FALLBACK_PHOTO = `${import.meta.env.BASE_URL}textures/default-dispatch.jpg
 
 function resolvePhotoUrl(photo) {
   if (!photo) return FALLBACK_PHOTO;
-  if (/^https?:\/\//i.test(photo)) return photo;
+  if (/^(https?:|data:|blob:)/i.test(photo) || photo.startsWith('/')) return photo;
   const cleanPath = photo.replace(/^\.?\//, '');
   return `${import.meta.env.BASE_URL}${cleanPath}`;
 }
