@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  base: '/global-postcard/',
+  base: '/the-gamers-meridian/',
   root: './',
   plugins: [
     tailwindcss()

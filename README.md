@@ -1,6 +1,6 @@
-# 🌍 Global Postcard
+# 🌍 The Gamer's Meridian
 
-This repository contains [Global Postcard](https://musman-uk.github.io/global-postcard/) - an interactive 3D web application anchoring virtual world settings from historical and modern video games onto real Earth coordinates using Three.js and Vite.
+This repository contains [The Gamer's Meridian](https://musman-uk.github.io/the-gamers-meridian/) - an interactive 3D web application anchoring virtual world settings from historical and modern video games onto real Earth coordinates using Three.js and Vite.
 
 ---
 
@@ -42,4 +42,3 @@ Version `0.0.0` – Unpublished
 
 <sub>© Mohammed Usman</sub>
 
-<sub>All rights reserved. No commercial use, redistribution, or derivatives.</sub>

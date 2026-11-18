@@ -1,8 +1,8 @@
 {
   "id": "ac1",
-  "volNum": "VOLUME I",
-  "title": "The Crusades (1191 AD)",
-  "franchise": "Assassin's Creed",
+  "order": 101,
+  "title": "Assassin's Creed",
+  "subtitle": "1191 AD",
   "color": "#d97706",
   "themeClass": "theme-ac1",
   "locations": [
@@ -55,7 +55,7 @@
       "id": "ac1-acre",
       "city": "Acre",
       "dispatchLocation": "Acre, Holy Land",
-      "modernLocation": "Akko, Israel",
+      "modernLocation": "Acre, Israel",
       "settingEra": "1191 AD (Third Crusade)",
       "coordinates": { "lat": 32.9278, "lng": 35.0817 },
       "icon": "fa-anchor",

@@ -1,8 +1,8 @@
 {
   "id": "u1",
-  "volNum": "VOLUME III",
-  "title": "El Dorado Expedition (Modern)",
-  "franchise": "Uncharted: Drake's Fortune",
+  "order": 201,
+  "title": "Uncharted: Drake's Fortune",
+  "subtitle": "Modern Day",
   "color": "#0284c7",
   "themeClass": "theme-u1",
   "locations": [
