@@ -22,9 +22,9 @@
       "quoteContext": "Nathan Drake examining the river canyon wreckage",
       "spatialNote": "Dense foliage layering and wet-surfaced stone physics inside jungle ravines.",
       "photoQuery": "Amazon River rainforest",
-      "photo": "",
+      "photo": "images/u1-amazon.webp",
       "ref": "REF-U1-AMZ",
-      "photoCredit": ""
+      "photoCredit": "CIAT / CC BY-SA 2.0"
     },
     {
       "id": "u1-island",
@@ -42,9 +42,9 @@
       "quoteContext": "Sully discovering the Golden Man in the island vault",
       "spatialNote": "16th-century Spanish fortresses with subterranean bunker tunnels.",
       "photoQuery": "Tutuila American Samoa",
-      "photo": "",
+      "photo": "images/u1-island.webp",
       "ref": "REF-U1-ISL",
-      "photoCredit": ""
+      "photoCredit": "NASA, Original uploader: User:GarciaB / Public domain"
     }
   ]
 }

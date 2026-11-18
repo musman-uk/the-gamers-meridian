@@ -22,9 +22,9 @@
       "quoteContext": "Ezio challenging Federico to a rooftop race across Florence",
       "spatialNote": "Features Brunelleschi's Duomo and Palazzo Vecchio in compressed urban proportions.",
       "photoQuery": "Santa Maria del Fiore Florence",
-      "photo": "",
+      "photo": "images/ac2-florence.webp",
       "ref": "REF-AC2-FLR",
-      "photoCredit": ""
+      "photoCredit": "Gary Campbell-Hall / CC BY 2.0"
     },
     {
       "id": "ac2-monteriggioni",
@@ -42,9 +42,9 @@
       "quoteContext": "Mario Auditore introducing Ezio to the sanctuary",
       "spatialNote": "Ring of 14 watchtowers encircling Villa Auditore.",
       "photoQuery": "Monteriggioni walls Tuscany",
-      "photo": "",
+      "photo": "images/ac2-monteriggioni.webp",
       "ref": "REF-AC2-MTR",
-      "photoCredit": ""
+      "photoCredit": "Carsten Steger / CC BY-SA 4.0"
     },
     {
       "id": "ac2-san-gimignano",
@@ -62,9 +62,9 @@
       "quoteContext": "Infiltrating the Pazzi conspirator towers",
       "spatialNote": "Medieval skyscrapers offering extreme vertical parkour vantage points.",
       "photoQuery": "San Gimignano towers",
-      "photo": "",
+      "photo": "images/ac2-san-gimignano.webp",
       "ref": "REF-AC2-SGM",
-      "photoCredit": ""
+      "photoCredit": "Chensiyuan / CC BY-SA 4.0"
     },
     {
       "id": "ac2-forli",
@@ -82,9 +82,9 @@
       "quoteContext": "Caterina Sforza defending Ravaldino Fortress",
       "spatialNote": "Marshland wetlands combined with the imposing stone moat of Ravaldino.",
       "photoQuery": "Rocca di Ravaldino Forlì",
-      "photo": "",
+      "photo": "images/ac2-forli.webp",
       "ref": "REF-AC2-FRL",
-      "photoCredit": ""
+      "photoCredit": "zheng.yan / CC BY-SA 4.0"
     },
     {
       "id": "ac2-venice",
@@ -102,9 +102,9 @@
       "quoteContext": "Rosa guiding Ezio through the Rialto district",
       "spatialNote": "Recreates St. Mark's Campanile and the Grand Canal network.",
       "photoQuery": "Doge's Palace Venice",
-      "photo": "",
+      "photo": "images/ac2-venice.webp",
       "ref": "REF-AC2-VNC",
-      "photoCredit": ""
+      "photoCredit": "Didier Descouens / CC BY-SA 4.0"
     },
     {
       "id": "ac2-vatican",
@@ -122,9 +122,9 @@
       "quoteContext": "Ezio confrontation beneath St. Peter's Basilica",
       "spatialNote": "Captures Old St. Peter's Basilica leading into an ancient Precursor Vault.",
       "photoQuery": "St. Peter's Basilica Vatican City",
-      "photo": "",
+      "photo": "images/ac2-vatican.webp",
       "ref": "REF-AC2-VAT",
-      "photoCredit": ""
+      "photoCredit": "Henry William Brewer (1836-1903) / Public domain"
     }
   ]
 }

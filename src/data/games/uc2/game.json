@@ -22,9 +22,9 @@
       "quoteContext": "Harry Flynn pitching the Museum Heist to Nate",
       "spatialNote": "Moonlit museum stealth infiltration across Ottoman domes and ancient sewers.",
       "photoQuery": "Topkapi Palace Istanbul",
-      "photo": "",
+      "photo": "images/u2-istanbul.webp",
       "ref": "REF-U2-IST",
-      "photoCredit": ""
+      "photoCredit": "flowcomm / CC BY 2.0"
     },
     {
       "id": "u2-borneo",
@@ -42,9 +42,9 @@
       "quoteContext": "Nate and Chloe inspecting the expedition camp",
       "spatialNote": "Jungle firefights among moss-covered tidal swamps and ancient ship hulks.",
       "photoQuery": "Borneo rainforest",
-      "photo": "",
+      "photo": "images/u2-borneo.webp",
       "ref": "REF-U2-BOR",
-      "photoCredit": ""
+      "photoCredit": "T. R. Shankar Raman / CC BY-SA 4.0"
     },
     {
       "id": "u2-kathmandu",
@@ -62,9 +62,9 @@
       "quoteContext": "Nate and Elena taking cover in a Nepalese alleyway",
       "spatialNote": "Vertical traversal across street barricades, hotel collapses, and pagodas.",
       "photoQuery": "Kathmandu Durbar Square",
-      "photo": "",
+      "photo": "images/u2-kathmandu.webp",
       "ref": "REF-U2-KTM",
-      "photoCredit": ""
+      "photoCredit": "Artha at the English-language Wikipedia / CC BY-SA 3.0"
     },
     {
       "id": "u2-himalayas",
@@ -82,9 +82,9 @@
       "quoteContext": "Tenzin leading Nate through ice caves",
       "spatialNote": "Cliffside train derailment hanging over a 2,000-foot vertical drop.",
       "photoQuery": "Tengboche Monastery Himalayas",
-      "photo": "",
+      "photo": "images/u2-himalayas.webp",
       "ref": "REF-U2-HIM",
-      "photoCredit": ""
+      "photoCredit": "© Vyacheslav Argenberg / CC BY 4.0"
     },
     {
       "id": "u2-shambhala",
@@ -102,9 +102,9 @@
       "quoteContext": "Nate uncovering the truth inside the Golden Sanctuary",
       "spatialNote": "Mythical lost city hidden behind ice cliffs with glowing blue resin pools.",
       "photoQuery": "Potala Palace Lhasa",
-      "photo": "",
+      "photo": "images/u2-shambhala.webp",
       "ref": "REF-U2-SHM",
-      "photoCredit": ""
+      "photoCredit": "Pavel Špindler / CC BY 3.0"
     }
   ]
 }
