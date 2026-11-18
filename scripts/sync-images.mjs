@@ -3,7 +3,6 @@ import path from 'node:path';
 import sharp from 'sharp';
 
 const DATA_ROOT = path.resolve('src/data');
-const PUBLIC_IMAGES_ROOT = path.resolve('public/images');
 const USER_AGENT =
   'TheGamersMeridianBot/1.0 (https://github.com/musman-uk; personal-atlas-project)';
 
@@ -122,7 +121,7 @@ function rankCandidates(pages) {
     .slice(0, 3);
 }
 
-async function searchWikimedia(loc) {
+async function searchWikimedia(loc, fallbackCoords = null) {
   const city = (loc.city || '').trim();
   const modern = (loc.modernLocation || '').trim();
 
@@ -133,7 +132,6 @@ async function searchWikimedia(loc) {
 
   const queries = [...new Set([combined, city].filter(Boolean))];
 
-  // 1. Text search in Wikimedia Commons File namespace (6)
   for (const query of queries) {
     const params = new URLSearchParams({
       action: 'query',
@@ -156,9 +154,9 @@ async function searchWikimedia(loc) {
     if (candidates.length > 0) return candidates;
   }
 
-  // 2. Fallback: Geosearch within 10km of coordinates (supports {lat, lng} or [lat, lng])
-  const lat = Array.isArray(loc.coordinates) ? loc.coordinates[0] : loc.coordinates?.lat;
-  const lng = Array.isArray(loc.coordinates) ? loc.coordinates[1] : loc.coordinates?.lng;
+  const coords = loc.coordinates || fallbackCoords;
+  const lat = Array.isArray(coords) ? coords[0] : coords?.lat;
+  const lng = Array.isArray(coords) ? coords[1] : coords?.lng;
 
   if (typeof lat === 'number' && typeof lng === 'number') {
     const geoParams = new URLSearchParams({
@@ -186,82 +184,97 @@ async function searchWikimedia(loc) {
   return [];
 }
 
+async function processEntry(entry, game, gameDir, filePath, parsedRoot, fallbackCoords = null) {
+  const currentPhoto = (entry.photo || '').trim();
+
+  if (/^https?:\/\//i.test(currentPhoto)) {
+    console.log(`✓ Skipping "${entry.city}" (keeping external URL)`);
+    return false;
+  }
+
+  if (currentPhoto) {
+    const cleanRel = currentPhoto.replace(/^\.?\//, '');
+    const existingPath = path.resolve(gameDir, cleanRel);
+    if (await fileExists(existingPath)) {
+      console.log(`✓ Skipping "${entry.city}" (local image already exists)`);
+      return false;
+    }
+  }
+
+  console.log(`✦ Searching Wikimedia Commons for "${entry.city}" (${game.title})...`);
+  const candidates = await searchWikimedia(entry, fallbackCoords);
+
+  if (candidates.length === 0) {
+    console.warn(`⚠ No suitable landscape photo found for "${entry.city}". Leaving blank.`);
+    return false;
+  }
+
+  const gameFolder = slugify(game.id || path.basename(gameDir));
+  const imagesDir = path.join(gameDir, 'images');
+  await fs.mkdir(imagesDir, { recursive: true });
+
+  const fileId = slugify(entry.id || `${gameFolder}-${entry.city}`);
+  const filename = `${fileId}.webp`;
+  const outPath = path.join(imagesDir, filename);
+
+  let savedCandidate = null;
+  for (const candidate of candidates) {
+    try {
+      const imgRes = await fetchWithRetry(candidate.url);
+      const rawBuffer = Buffer.from(await imgRes.arrayBuffer());
+
+      await sharp(rawBuffer)
+        .resize(1200, 750, { fit: 'cover', position: 'attention' })
+        .webp({ quality: 84 })
+        .toFile(outPath);
+
+      savedCandidate = candidate;
+      break;
+    } catch (err) {
+      console.warn(`  Candidate failed (${candidate.title}): ${err.message}, trying next...`);
+    }
+  }
+
+  if (!savedCandidate) {
+    console.warn(`⚠ All image downloads failed for "${entry.city}". Leaving blank.`);
+    return false;
+  }
+
+  entry.photo = `images/${filename}`;
+  entry.photoCredit = savedCandidate.credit;
+
+  await fs.writeFile(filePath, JSON.stringify(parsedRoot, null, 2) + '\n', 'utf8');
+  console.log(
+    `  Saved -> ${path.relative(process.cwd(), outPath)} (${savedCandidate.credit})`
+  );
+
+  await sleep(1500);
+  return true;
+}
+
 async function syncFile(filePath) {
   const raw = await fs.readFile(filePath, 'utf8');
   const parsed = JSON.parse(raw);
   const games = Array.isArray(parsed) ? parsed : [parsed];
+  const gameDir = path.dirname(filePath);
 
   let updatedCount = 0;
 
   for (const game of games) {
     if (!game || !Array.isArray(game.locations)) continue;
 
-    const gameFolder = slugify(game.id || path.basename(path.dirname(filePath)));
-    const gameOutputDir = path.join(PUBLIC_IMAGES_ROOT, gameFolder);
-
     for (const loc of game.locations) {
-      const currentPhoto = (loc.photo || '').trim();
-
-      if (currentPhoto && !/^https?:\/\//i.test(currentPhoto)) {
-        const cleanRel = currentPhoto.replace(/^\.\//, '');
-        const existingPath = path.resolve('public', cleanRel);
-        if (await fileExists(existingPath)) {
-          console.log(`✓ Skipping "${loc.city}" (local image already exists)`);
-          continue;
+      if (Array.isArray(loc.subLocations) && loc.subLocations.length > 0) {
+        for (const sub of loc.subLocations) {
+          if (await processEntry(sub, game, gameDir, filePath, parsed, loc.coordinates)) {
+            updatedCount++;
+          }
+        }
+      } else {
+        if (await processEntry(loc, game, gameDir, filePath, parsed)) {
+          updatedCount++;
         }
       }
-
-      if (/^https?:\/\//i.test(currentPhoto)) {
-        console.log(`✓ Skipping "${loc.city}" (keeping external URL)`);
-        continue;
-      }
-
-      console.log(`✦ Searching Wikimedia Commons for "${loc.city}" (${game.title})...`);
-      const candidates = await searchWikimedia(loc);
-
-      if (candidates.length === 0) {
-        console.warn(`⚠ No suitable landscape photo found for "${loc.city}". Leaving blank.`);
-        continue;
-      }
-
-      await fs.mkdir(gameOutputDir, { recursive: true });
-      const fileId = slugify(loc.id || `${gameFolder}-${loc.city}`);
-      const filename = `${fileId}.webp`;
-      const outPath = path.join(gameOutputDir, filename);
-
-      let savedCandidate = null;
-      for (const candidate of candidates) {
-        try {
-          const imgRes = await fetchWithRetry(candidate.url);
-          const rawBuffer = Buffer.from(await imgRes.arrayBuffer());
-
-          await sharp(rawBuffer)
-            .resize(1200, 750, { fit: 'cover', position: 'attention' })
-            .webp({ quality: 84 })
-            .toFile(outPath);
-
-          savedCandidate = candidate;
-          break;
-        } catch (err) {
-          console.warn(`  Candidate failed (${candidate.title}): ${err.message}, trying next...`);
-        }
-      }
-
-      if (!savedCandidate) {
-        console.warn(`⚠ All image downloads failed for "${loc.city}". Leaving blank.`);
-        continue;
-      }
-
-      loc.photo = `./images/${gameFolder}/${filename}`;
-      loc.photoCredit = savedCandidate.credit;
-      updatedCount++;
-
-      await fs.writeFile(filePath, JSON.stringify(parsed, null, 2) + '\n', 'utf8');
-      console.log(
-        `  Saved -> public/images/${gameFolder}/${filename} (${savedCandidate.credit})`
-      );
-
-      await sleep(1500);
     }
   }
 
