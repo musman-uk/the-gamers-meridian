@@ -1,293 +1,460 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import sharp from 'sharp';
+const STORAGE_KEY_PINNED = 'gp_pinned_locations_v1';
+const FALLBACK_PHOTO = `${import.meta.env.BASE_URL}textures/default-dispatch.jpg`;
 
-const DATA_ROOT = path.resolve('src/data');
-const PUBLIC_IMAGES_ROOT = path.resolve('public/images');
-const USER_AGENT =
-  'TheGamersMeridianBot/1.0 (https://github.com/musman-uk; personal-atlas-project)';
-
-const EXCLUDE_TITLE_REGEX =
-  /\b(map|flag|coat[ _]of[ _]arms|logo|diagram|plan|seal|coin|stamp|plaque|inscription|locator|svg)\b/i;
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function slugify(text) {
-  return String(text || 'waypoint')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+function resolvePhotoUrl(photo) {
+  if (!photo) return FALLBACK_PHOTO;
+  if (/^https?:\/\//i.test(photo)) return photo;
+  const cleanPath = photo.replace(/^\.?\//, '');
+  return `${import.meta.env.BASE_URL}${cleanPath}`;
 }
 
-function cleanMetadataText(raw) {
-  if (!raw) return '';
-  return String(raw)
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;|&apos;/g, "'")
-    .replace(/&nbsp;|&#160;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+const PIN_SVG = `<svg class="w-2.5 h-2.5" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M32 32C32 14.3 46.3 0 64 0H320c17.7 0 32 14.3 32 32s-14.3 32-32 32H290.5l11.4 148.2c36.7 19.9 65.7 53.2 79.5 94.7l1 3c3.3 9.8 1.6 20.5-4.4 28.8s-15.7 13.3-26 13.3H32c-10.3 0-19.9-4.9-26-13.3s-7.7-19.1-4.4-28.8l1-3c13.8-41.5 42.8-74.8 79.5-94.7L93.5 64H64C46.3 64 32 49.7 32 32zM160 384h64v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V384z"/></svg>`;
 
-function formatPhotoCredit(ext = {}) {
-  const customAttribution = cleanMetadataText(ext.Attribution?.value);
-  const artist = cleanMetadataText(ext.Artist?.value);
-  const license = cleanMetadataText(ext.LicenseShortName?.value);
+let currentActiveLoc = null;
+let setGlobeModalStateRef = null;
+let setGlobeModeRef = null;
+let setPinVisibilityRef = null;
+let utcTimer = null;
+let pinnedIds = new Set();
+let allTopLevelLocIds = [];
+let cardPointerDownPos = { x: 0, y: 0 };
 
-  const author = customAttribution || artist;
-
-  if (author && license) {
-    return author.toLowerCase().includes(license.toLowerCase())
-      ? author
-      : `${author} / ${license}`;
-  }
-  if (author) return `${author} / Wikimedia Commons`;
-  if (license) return `${license} / Wikimedia Commons`;
-  return 'Wikimedia Commons';
-}
-
-function fileExists(filePath) {
-  return fs.access(filePath).then(() => true).catch(() => false);
-}
-
-async function findJsonFiles(dir) {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-  const files = [];
-
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await findJsonFiles(fullPath)));
-    } else if (entry.isFile() && entry.name.endsWith('.json')) {
-      files.push(fullPath);
+function loadPinPreferences(allIds) {
+  allTopLevelLocIds = allIds;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_PINNED);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        pinnedIds = new Set(parsed.filter(id => allIds.includes(id)));
+        return;
+      }
     }
+  } catch {
+    // Fallback to none pinned if storage is blocked
   }
-  return files;
+  pinnedIds = new Set();
 }
 
-async function fetchWithRetry(url, options = {}, attempt = 1) {
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      'User-Agent': USER_AGENT,
-      ...(options.headers || {})
-    }
+function savePinPreferences() {
+  try {
+    localStorage.setItem(STORAGE_KEY_PINNED, JSON.stringify([...pinnedIds]));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function syncPinStatesToGlobe() {
+  allTopLevelLocIds.forEach(id => {
+    const isVisible = pinnedIds.has(id);
+    if (setPinVisibilityRef) setPinVisibilityRef(id, isVisible);
+    document.querySelectorAll(`.pin-toggle-chip[data-pin-id="${id}"]`).forEach(chip => {
+      chip.classList.toggle('is-unpinned', !isVisible);
+      chip.title = isVisible ? 'Hide Pin on Globe' : 'Show Pin on Globe';
+    });
   });
 
-  if ((res.status === 429 || res.status === 503) && attempt < 4) {
-    const waitMs = attempt * 5000;
-    console.log(`  Wikimedia throttled (${res.status}), waiting ${waitMs / 1000}s before retry...`);
-    await sleep(waitMs);
-    return fetchWithRetry(url, options, attempt + 1);
+  const pinnedCount = pinnedIds.size;
+  const countLabel = document.getElementById('stampedCountLabel');
+  if (countLabel) {
+    countLabel.textContent = `${pinnedCount} / ${allTopLevelLocIds.length} pinned`;
   }
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} for ${url}`);
+  const toggleAllLabel = document.getElementById('toggleAllPinsLabel');
+  if (toggleAllLabel) {
+    toggleAllLabel.textContent =
+      pinnedIds.size === allTopLevelLocIds.length ? 'Hide All Pins' : 'Show All Pins';
   }
-
-  return res;
 }
 
-function rankCandidates(pages) {
-  if (!pages) return [];
-
-  return Object.values(pages)
-    .map((page) => {
-      const info = page.imageinfo?.[0];
-      if (!info) return null;
-      return {
-        title: page.title || '',
-        url: info.thumburl || info.url,
-        width: info.width || 0,
-        height: info.height || 0,
-        mime: info.mime || '',
-        credit: formatPhotoCredit(info.extmetadata)
-      };
-    })
-    .filter(Boolean)
-    .filter((item) => {
-      if (!/^image\/(jpeg|png|webp)$/i.test(item.mime)) return false;
-      if (EXCLUDE_TITLE_REGEX.test(item.title)) return false;
-      if (item.width < 1000 || item.height < 550) return false;
-      const ratio = item.width / item.height;
-      return ratio >= 1.2 && ratio <= 2.4;
-    })
-    .sort((a, b) => {
-      const diffA = Math.abs(a.width / a.height - 1.6);
-      const diffB = Math.abs(b.width / b.height - 1.6);
-      return diffA - diffB;
-    })
-    .slice(0, 3);
+function setDrawerOpen(bookletDrawer, open) {
+  if (!bookletDrawer) return;
+  bookletDrawer.classList.toggle('is-open', open);
+  bookletDrawer.setAttribute('aria-hidden', String(!open));
 }
 
-async function searchWikimedia(loc) {
-  const city = (loc.city || '').trim();
-  const modern = (loc.modernLocation || '').trim();
-
-  const combined =
-    modern && city && !modern.toLowerCase().includes(city.toLowerCase())
-      ? `${city} ${modern}`
-      : modern || city;
-
-  const queries = [...new Set([combined, city].filter(Boolean))];
-
-  // 1. Text search in Wikimedia Commons File namespace (6)
-  for (const query of queries) {
-    const params = new URLSearchParams({
-      action: 'query',
-      generator: 'search',
-      gsrsearch: `${query} filetype:bitmap`,
-      gsrnamespace: '6',
-      gsrlimit: '15',
-      prop: 'imageinfo',
-      iiprop: 'url|size|mime|extmetadata',
-      iiextmetadatafilter: 'Artist|LicenseShortName|Attribution',
-      iiurlwidth: '1280',
-      format: 'json'
-    });
-
-    const res = await fetchWithRetry(`https://commons.wikimedia.org/w/api.php?${params}`, {
-      headers: { Accept: 'application/json' }
-    });
-    const data = await res.json();
-    const candidates = rankCandidates(data?.query?.pages);
-    if (candidates.length > 0) return candidates;
-  }
-
-  // 2. Fallback: Geosearch within 10km of coordinates (supports {lat, lng} or [lat, lng])
-  const lat = Array.isArray(loc.coordinates) ? loc.coordinates[0] : loc.coordinates?.lat;
-  const lng = Array.isArray(loc.coordinates) ? loc.coordinates[1] : loc.coordinates?.lng;
-
-  if (typeof lat === 'number' && typeof lng === 'number') {
-    const geoParams = new URLSearchParams({
-      action: 'query',
-      generator: 'geosearch',
-      ggscoord: `${lat}|${lng}`,
-      ggsradius: '10000',
-      ggsnamespace: '6',
-      ggslimit: '15',
-      prop: 'imageinfo',
-      iiprop: 'url|size|mime|extmetadata',
-      iiextmetadatafilter: 'Artist|LicenseShortName|Attribution',
-      iiurlwidth: '1280',
-      format: 'json'
-    });
-
-    const geoRes = await fetchWithRetry(`https://commons.wikimedia.org/w/api.php?${geoParams}`, {
-      headers: { Accept: 'application/json' }
-    });
-    const geoData = await geoRes.json();
-    const geoCandidates = rankCandidates(geoData?.query?.pages);
-    if (geoCandidates.length > 0) return geoCandidates;
-  }
-
-  return [];
+function setStampModalOpen(stampModal, open) {
+  if (!stampModal) return;
+  stampModal.classList.toggle('is-open', open);
+  stampModal.setAttribute('aria-hidden', String(!open));
 }
 
-async function syncFile(filePath) {
-  const raw = await fs.readFile(filePath, 'utf8');
-  const parsed = JSON.parse(raw);
-  const games = Array.isArray(parsed) ? parsed : [parsed];
+export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeControls = {}) {
+  setGlobeModalStateRef = setGlobeModalState;
+  setGlobeModeRef = globeControls.setGlobeMode || null;
+  setPinVisibilityRef = globeControls.setPinVisibility || null;
 
-  let updatedCount = 0;
+  const topIds = gamesCatalog.flatMap(vol => vol.locations.map(loc => loc.id));
+  loadPinPreferences(topIds);
 
-  for (const game of games) {
-    if (!game || !Array.isArray(game.locations)) continue;
+  buildTravelJournalDrawer(gamesCatalog, onFlyToLocation);
+  syncPinStatesToGlobe();
+  initGlobeRocker();
 
-    const gameFolder = slugify(game.id || path.basename(path.dirname(filePath)));
-    const gameOutputDir = path.join(PUBLIC_IMAGES_ROOT, gameFolder);
+  const albumToggle = document.getElementById('albumToggle');
+  const bookletDrawer = document.getElementById('bookletDrawer');
+  const drawerClose = document.getElementById('drawerClose');
+  const webglContainer = document.getElementById('webgl-container');
 
-    for (const loc of game.locations) {
-      const currentPhoto = (loc.photo || '').trim();
+  setDrawerOpen(bookletDrawer, false);
 
-      if (currentPhoto && !/^https?:\/\//i.test(currentPhoto)) {
-        const cleanRel = currentPhoto.replace(/^\.\//, '');
-        const existingPath = path.resolve('public', cleanRel);
-        if (await fileExists(existingPath)) {
-          console.log(`✓ Skipping "${loc.city}" (local image already exists)`);
-          continue;
-        }
+  if (albumToggle) {
+    albumToggle.onclick = (e) => {
+      e.stopPropagation();
+      setDrawerOpen(bookletDrawer, !bookletDrawer.classList.contains('is-open'));
+    };
+  }
+  if (drawerClose) {
+    drawerClose.onclick = () => setDrawerOpen(bookletDrawer, false);
+  }
+  if (webglContainer) {
+    webglContainer.onpointerdown = () => {
+      if (bookletDrawer.classList.contains('is-open')) {
+        setDrawerOpen(bookletDrawer, false);
       }
+    };
+  }
 
-      if (/^https?:\/\//i.test(currentPhoto)) {
-        console.log(`✓ Skipping "${loc.city}" (keeping external URL)`);
-        continue;
+  const toggleAllPinsBtn = document.getElementById('toggleAllPinsBtn');
+  if (toggleAllPinsBtn) {
+    toggleAllPinsBtn.onclick = () => {
+      if (pinnedIds.size === allTopLevelLocIds.length) {
+        pinnedIds.clear();
+      } else {
+        pinnedIds = new Set(allTopLevelLocIds);
       }
+      savePinPreferences();
+      syncPinStatesToGlobe();
+    };
+  }
 
-      console.log(`✦ Searching Wikimedia Commons for "${loc.city}" (${game.title})...`);
-      const candidates = await searchWikimedia(loc);
+  const stampToggle = document.getElementById('stampToggle');
+  const stampModal = document.getElementById('stampModal');
+  const stampClose = document.getElementById('stampClose');
 
-      if (candidates.length === 0) {
-        console.warn(`⚠ No suitable landscape photo found for "${loc.city}". Leaving blank.`);
-        continue;
+  if (stampToggle) {
+    stampToggle.onclick = () => setStampModalOpen(stampModal, true);
+  }
+  if (stampClose) {
+    stampClose.onclick = () => setStampModalOpen(stampModal, false);
+  }
+  if (stampModal) {
+    stampModal.onclick = (e) => {
+      if (e.target === stampModal) setStampModalOpen(stampModal, false);
+    };
+  }
+
+  const postcardModal = document.getElementById('postcardModal');
+  const postcardWrapper = document.getElementById('postcardWrapper');
+  const btnFlipCard = document.getElementById('btnFlipCard');
+  const btnCloseModal = document.getElementById('btnCloseModal');
+  const postcardCard = document.getElementById('postcardCard');
+
+  if (postcardModal) {
+    postcardModal.setAttribute('aria-hidden', 'true');
+    postcardModal.onclick = (e) => {
+      if (e.target === postcardModal || e.target === postcardWrapper) {
+        closePostcardModal();
       }
+    };
+  }
+  if (btnFlipCard) btnFlipCard.onclick = flipPostcard;
+  if (btnCloseModal) btnCloseModal.onclick = closePostcardModal;
+  if (postcardCard) {
+    postcardCard.onpointerdown = (e) => {
+      cardPointerDownPos = { x: e.clientX, y: e.clientY };
+    };
+    postcardCard.onclick = (e) => {
+      if (e.target.closest('#regionalTabs')) return;
+      const moveDist = Math.hypot(e.clientX - cardPointerDownPos.x, e.clientY - cardPointerDownPos.y);
+      if (moveDist > 12) return;
+      if (window.getSelection()?.toString()) return;
+      flipPostcard();
+    };
+  }
 
-      await fs.mkdir(gameOutputDir, { recursive: true });
-      const fileId = slugify(loc.id || `${gameFolder}-${loc.city}`);
-      const filename = `${fileId}.webp`;
-      const outPath = path.join(gameOutputDir, filename);
-
-      let savedCandidate = null;
-      for (const candidate of candidates) {
-        try {
-          const imgRes = await fetchWithRetry(candidate.url);
-          const rawBuffer = Buffer.from(await imgRes.arrayBuffer());
-
-          await sharp(rawBuffer)
-            .resize(1200, 750, { fit: 'cover', position: 'attention' })
-            .webp({ quality: 84 })
-            .toFile(outPath);
-
-          savedCandidate = candidate;
-          break;
-        } catch (err) {
-          console.warn(`  Candidate failed (${candidate.title}): ${err.message}, trying next...`);
-        }
-      }
-
-      if (!savedCandidate) {
-        console.warn(`⚠ All image downloads failed for "${loc.city}". Leaving blank.`);
-        continue;
-      }
-
-      loc.photo = `./images/${gameFolder}/${filename}`;
-      loc.photoCredit = savedCandidate.credit;
-      updatedCount++;
-
-      await fs.writeFile(filePath, JSON.stringify(parsed, null, 2) + '\n', 'utf8');
-      console.log(
-        `  Saved -> public/images/${gameFolder}/${filename} (${savedCandidate.credit})`
-      );
-
-      await sleep(1500);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closePostcardModal();
+      setDrawerOpen(bookletDrawer, false);
+      setStampModalOpen(stampModal, false);
     }
-  }
-
-  return updatedCount;
+  });
 }
 
-async function main() {
-  if (!(await fileExists(DATA_ROOT))) {
-    throw new Error(`Data directory not found: ${DATA_ROOT}`);
-  }
+function initGlobeRocker() {
+  const btnClassic = document.getElementById('btnEquinoxDrift');
+  const btnLive = document.getElementById('btnLocalNoon');
+  const readout = document.getElementById('telemetryReadout');
+  let activeMode = 'drift';
 
-  const jsonFiles = await findJsonFiles(DATA_ROOT);
-  let totalUpdated = 0;
+  const updateUtc = () => {
+    if (!readout) return;
+    if (activeMode === 'realtime') {
+      const now = new Date();
+      const hh = String(now.getUTCHours()).padStart(2, '0');
+      const mm = String(now.getUTCMinutes()).padStart(2, '0');
+      readout.textContent = `${hh}:${mm} UTC`;
+      readout.classList.remove('hidden');
+    } else {
+      readout.classList.add('hidden');
+    }
+  };
 
-  for (const file of jsonFiles) {
-    totalUpdated += await syncFile(file);
-  }
+  const setMode = (mode) => {
+    activeMode = mode;
+    if (btnClassic) btnClassic.classList.toggle('is-active', mode === 'drift');
+    if (btnLive) btnLive.classList.toggle('is-active', mode === 'realtime');
+    if (setGlobeModeRef) setGlobeModeRef(mode);
+    updateUtc();
+  };
 
-  console.log(
-    totalUpdated > 0
-      ? `\nSynced ${totalUpdated} new postcard photo(s) from Wikimedia Commons.`
-      : '\nAll postcards already have photos. Nothing to download.'
-  );
+  if (btnClassic) btnClassic.onclick = () => setMode('drift');
+  if (btnLive) btnLive.onclick = () => setMode('realtime');
+
+  if (utcTimer) clearInterval(utcTimer);
+  utcTimer = setInterval(updateUtc, 10000);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+function buildTravelJournalDrawer(gamesCatalog, onFlyToLocation) {
+  const container = document.getElementById('gameVolumesList');
+  container.innerHTML = '';
+
+  let totalWaypointsCount = 0;
+
+  gamesCatalog.forEach(vol => {
+    const card = document.createElement('div');
+    card.className = 'journal-volume-card';
+
+    let locItemsHtml = '';
+    vol.locations.forEach(loc => {
+      if (loc.isRegion && loc.subLocations) {
+        totalWaypointsCount += loc.subLocations.length;
+        locItemsHtml += `
+          <div class="mt-2 pt-2 border-t border-amber-500/15">
+            <div class="flex items-center justify-between px-1 mb-1">
+              <span class="text-[9.5px] font-mono journal-accent font-bold">Region • ${loc.city}</span>
+              <button type="button" data-pin-id="${loc.id}" class="pin-toggle-chip" title="Toggle Pin on Globe" aria-label="Toggle ${loc.city} pin">
+                ${PIN_SVG}
+              </button>
+            </div>
+            <div class="space-y-1">
+              ${loc.subLocations.map(sub => `
+                <button type="button" data-loc-id="${loc.id}" data-sub-id="${sub.id}" class="journal-entry-btn journal-fly-btn">
+                  <span class="text-xs font-semibold journal-text font-postcard-type truncate">✦ ${sub.city}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        totalWaypointsCount += 1;
+        locItemsHtml += `
+          <div class="journal-entry-row">
+            <button type="button" data-loc-id="${loc.id}" class="journal-entry-btn journal-fly-btn">
+              <span class="text-xs font-semibold journal-text font-postcard-type truncate">• ${loc.city}</span>
+            </button>
+            <button type="button" data-pin-id="${loc.id}" class="pin-toggle-chip" title="Toggle Pin on Globe" aria-label="Toggle ${loc.city} pin">
+              ${PIN_SVG}
+            </button>
+          </div>
+        `;
+      }
+    });
+
+    const pinCountText = vol.locations.length === 1 ? '1 pin' : `${vol.locations.length} pins`;
+
+    card.innerHTML = `
+      <div class="journal-volume-header">
+        <div>
+          <h3 class="text-sm font-bold journal-text font-serif leading-snug">${vol.title}</h3>
+          <p class="text-[10px] journal-text-muted font-postcard-type">${vol.subtitle || vol.franchise || ''}</p>
+        </div>
+        <span class="text-[9.5px] px-2 py-0.5 rounded-xs font-mono font-bold journal-card journal-accent border border-amber-500/30 shrink-0">${pinCountText}</span>
+      </div>
+      <div class="space-y-1.5">${locItemsHtml}</div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  const totalLogsCounter = document.getElementById('totalLogsCounter');
+  if (totalLogsCounter) {
+    totalLogsCounter.textContent = `${totalWaypointsCount} logged`;
+  }
+
+  container.querySelectorAll('.journal-fly-btn').forEach(btn => {
+    btn.onclick = () => {
+      const locId = btn.getAttribute('data-loc-id');
+      const subId = btn.getAttribute('data-sub-id');
+      if (!pinnedIds.has(locId)) {
+        pinnedIds.add(locId);
+        savePinPreferences();
+        syncPinStatesToGlobe();
+      }
+      setDrawerOpen(document.getElementById('bookletDrawer'), false);
+      onFlyToLocation(locId, subId);
+    };
+  });
+
+  container.querySelectorAll('.pin-toggle-chip').forEach(chip => {
+    chip.onclick = (e) => {
+      e.stopPropagation();
+      const locId = chip.getAttribute('data-pin-id');
+      if (pinnedIds.has(locId)) {
+        pinnedIds.delete(locId);
+      } else {
+        pinnedIds.add(locId);
+      }
+      savePinPreferences();
+      syncPinStatesToGlobe();
+    };
+  });
+}
+
+export function openPostcardModal(loc, subId = null) {
+  currentActiveLoc = loc;
+  if (setGlobeModalStateRef) setGlobeModalStateRef(true);
+
+  const modal = document.getElementById('postcardModal');
+  const wrapper = document.getElementById('postcardWrapper');
+  const card = document.getElementById('postcardCard');
+  const regionalTabs = document.getElementById('regionalTabs');
+  const postcardBack = document.getElementById('postcardBack');
+
+  card.classList.remove('rotate-y-180');
+  postcardBack.className = "absolute inset-0 w-full h-full backface-hidden rotate-y-180 text-slate-900 rounded-md border-8 p-3 sm:p-5 flex flex-col justify-between shadow-2xl overflow-hidden transition-colors duration-300 " + (loc.themeClass || "theme-ac1");
+
+  if (loc.isRegion && loc.subLocations && loc.subLocations.length > 0) {
+    regionalTabs.classList.remove('hidden');
+    regionalTabs.classList.add('flex');
+
+    regionalTabs.innerHTML = loc.subLocations.map(sub => `
+      <button id="tab-${sub.id}" class="sub-tab-btn" data-sub-id="${sub.id}">${sub.city}</button>
+    `).join('');
+
+    regionalTabs.querySelectorAll('.sub-tab-btn').forEach(tabBtn => {
+      tabBtn.onclick = () => switchSubTab(tabBtn.getAttribute('data-sub-id'));
+    });
+
+    switchSubTab(subId || loc.subLocations[0].id);
+  } else {
+    regionalTabs.classList.add('hidden');
+    regionalTabs.classList.remove('flex');
+    renderCardData({
+      city: loc.city,
+      dispatchLocation: loc.dispatchLocation,
+      modernLocation: loc.modernLocation,
+      settingEra: loc.settingEra,
+      quote: loc.quote,
+      quoteContext: loc.quoteContext,
+      spatialNote: loc.spatialNote,
+      photo: loc.photo,
+      photoCredit: loc.photoCredit,
+      ref: loc.ref,
+      game: loc.game,
+      tagline: loc.tagline,
+      icon: loc.icon,
+      lat: loc.coordinates.lat,
+      lng: loc.coordinates.lng
+    });
+  }
+
+  modal.classList.remove('opacity-0', 'pointer-events-none');
+  modal.setAttribute('aria-hidden', 'false');
+  wrapper.classList.remove('scale-75');
+  wrapper.classList.add('scale-100');
+}
+
+function switchSubTab(subId) {
+  if (!currentActiveLoc || !currentActiveLoc.subLocations) return;
+  const sub = currentActiveLoc.subLocations.find(s => s.id === subId);
+  if (!sub) return;
+
+  currentActiveLoc.subLocations.forEach(s => {
+    const btn = document.getElementById(`tab-${s.id}`);
+    if (btn) btn.classList.toggle('is-active', s.id === subId);
+  });
+
+  renderCardData({
+    city: sub.city,
+    dispatchLocation: sub.dispatchLocation,
+    modernLocation: sub.modernLocation,
+    settingEra: sub.settingEra,
+    quote: sub.quote,
+    quoteContext: sub.quoteContext,
+    spatialNote: sub.spatialNote,
+    photo: sub.photo,
+    photoCredit: sub.photoCredit,
+    ref: sub.ref,
+    game: currentActiveLoc.game,
+    tagline: `${sub.city} Dispatch • ${currentActiveLoc.city}`,
+    icon: currentActiveLoc.icon,
+    lat: sub.coordinates?.lat ?? currentActiveLoc.coordinates.lat,
+    lng: sub.coordinates?.lng ?? currentActiveLoc.coordinates.lng
+  });
+}
+
+function renderCardData(data) {
+  const frontImg = document.getElementById('pcFrontImg');
+  frontImg.onerror = () => {
+    frontImg.onerror = null;
+    frontImg.src = FALLBACK_PHOTO;
+  };
+  frontImg.src = resolvePhotoUrl(data.photo);
+  frontImg.title = data.photoCredit ? `Photo: ${data.photoCredit}` : '';
+
+  const creditEl = document.getElementById('pcPhotoCredit');
+  if (creditEl) {
+    creditEl.textContent = data.photoCredit || '';
+    creditEl.classList.toggle('hidden', !data.photoCredit);
+  }
+
+  document.getElementById('pcGameBadge').textContent = data.game;
+  document.getElementById('pcFrontLocation').textContent = data.dispatchLocation;
+  document.getElementById('pcTitle').textContent = data.city;
+  document.getElementById('pcTagline').textContent = data.tagline;
+
+  const eraLabel = data.settingEra || '';
+  document.getElementById('pcBackCity').textContent = data.city;
+  document.getElementById('pcSettingHeader').textContent = eraLabel
+    ? `${data.dispatchLocation} • (${eraLabel})`
+    : data.dispatchLocation;
+  document.getElementById('pcOriginSealEra').textContent = eraLabel.split(' ')[0] || 'Origin';
+
+  document.getElementById('pcStampIcon').className = `fa-solid ${data.icon || 'fa-landmark'} text-xs sm:text-sm mt-0.5 text-amber-300`;
+  document.getElementById('pcStampValue').textContent = data.city.substring(0, 4);
+
+  document.getElementById('pcQuote').textContent = `"${data.quote}"`;
+  document.getElementById('pcQuoteContext').textContent = `— ${data.quoteContext}`;
+  document.getElementById('pcSpatialNote').textContent = data.spatialNote;
+
+  document.getElementById('pcMetaGame').textContent = data.game;
+  document.getElementById('pcMetaEra').textContent = eraLabel || '—';
+  document.getElementById('pcMetaReal').textContent = data.modernLocation;
+
+  const latHem = data.lat >= 0 ? 'N' : 'S';
+  const lngHem = data.lng >= 0 ? 'E' : 'W';
+  document.getElementById('pcMetaCoords').textContent =
+    `${Math.abs(data.lat).toFixed(4)}° ${latHem}, ${Math.abs(data.lng).toFixed(4)}° ${lngHem}`;
+
+  document.getElementById('pcRefId').textContent = data.ref;
+}
+
+function flipPostcard() {
+  document.getElementById('postcardCard').classList.toggle('rotate-y-180');
+}
+
+function closePostcardModal() {
+  const modal = document.getElementById('postcardModal');
+  const wrapper = document.getElementById('postcardWrapper');
+  const card = document.getElementById('postcardCard');
+
+  wrapper.classList.remove('scale-100');
+  wrapper.classList.add('scale-75');
+  modal.classList.add('opacity-0', 'pointer-events-none');
+  modal.setAttribute('aria-hidden', 'true');
+
+  if (setGlobeModalStateRef) setGlobeModalStateRef(false);
+  setTimeout(() => card.classList.remove('rotate-y-180'), 300);
+}
