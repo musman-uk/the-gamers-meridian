@@ -21,9 +21,10 @@
       "quote": "There's a German U-boat in the middle of the Amazon jungle. Tell me that's not weird.",
       "quoteContext": "Nathan Drake examining the river canyon wreckage",
       "spatialNote": "Dense foliage layering and wet-surfaced stone physics inside jungle ravines.",
-      "photo": "images/u1-amazon.webp",
+      "photoQuery": "Amazon River rainforest",
+      "photo": "",
       "ref": "REF-U1-AMZ",
-      "photoCredit": "NASA Expedition 20 crew / Public domain"
+      "photoCredit": ""
     },
     {
       "id": "u1-island",
@@ -40,9 +41,10 @@
       "quote": "Drake... we're sitting on a goldmine. Literally.",
       "quoteContext": "Sully discovering the Golden Man in the island vault",
       "spatialNote": "16th-century Spanish fortresses with subterranean bunker tunnels.",
-      "photo": "images/u1-island.webp",
+      "photoQuery": "Tutuila American Samoa",
+      "photo": "",
       "ref": "REF-U1-ISL",
-      "photoCredit": "I, Brocken Inaglory / CC BY-SA 3.0"
+      "photoCredit": ""
     }
   ]
 }
