@@ -6,8 +6,15 @@ const DATA_ROOT = path.resolve('src/data');
 const USER_AGENT =
   'TheGamersMeridianBot/1.0 (https://github.com/musman-uk; personal-atlas-project)';
 
+const FORCE_REFRESH = process.argv.includes('--force');
+const GAME_FILTER = process.argv
+  .find((arg) => arg.startsWith('--game='))
+  ?.split('=')[1]
+  ?.trim()
+  .toLowerCase();
+
 const EXCLUDE_TITLE_REGEX =
-  /\b(map|flag|coat[ _]of[ _]arms|logo|diagram|plan|seal|coin|stamp|plaque|inscription|locator|svg)\b/i;
+  /\b(map|flag|coat[ _]of[ _]arms|logo|diagram|plan|seal|coin|stamp|plaque|locator|svg)\b/i;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -109,7 +116,7 @@ function rankCandidates(pages) {
     .filter((item) => {
       if (!/^image\/(jpeg|png|webp)$/i.test(item.mime)) return false;
       if (EXCLUDE_TITLE_REGEX.test(item.title)) return false;
-      if (item.width < 1000 || item.height < 550) return false;
+      if (item.width < 950 || item.height < 520) return false;
       const ratio = item.width / item.height;
       return ratio >= 1.2 && ratio <= 2.4;
     })
@@ -118,27 +125,40 @@ function rankCandidates(pages) {
       const diffB = Math.abs(b.width / b.height - 1.6);
       return diffA - diffB;
     })
-    .slice(0, 3);
+    .slice(0, 4);
 }
 
-async function searchWikimedia(loc, fallbackCoords = null) {
-  const city = (loc.city || '').trim();
-  const modern = (loc.modernLocation || '').trim();
-
-  const combined =
-    modern && city && !modern.toLowerCase().includes(city.toLowerCase())
-      ? `${city} ${modern}`
-      : modern || city;
-
-  const queries = [...new Set([combined, city].filter(Boolean))];
-
-  for (const query of queries) {
-    const params = new URLSearchParams({
+async function fetchWikipediaLeadCandidates(query) {
+  try {
+    const wpParams = new URLSearchParams({
       action: 'query',
       generator: 'search',
-      gsrsearch: `${query} filetype:bitmap`,
-      gsrnamespace: '6',
-      gsrlimit: '15',
+      gsrsearch: query,
+      gsrlimit: '3',
+      prop: 'pageimages',
+      piprop: 'name',
+      format: 'json'
+    });
+
+    const wpRes = await fetchWithRetry(`https://en.wikipedia.org/w/api.php?${wpParams}`, {
+      headers: { Accept: 'application/json' }
+    });
+    const wpData = await wpRes.json();
+    const pages = Object.values(wpData?.query?.pages || {});
+    const fileTitles = [
+      ...new Set(
+        pages
+          .map((p) => p.pageimage)
+          .filter(Boolean)
+          .map((name) => `File:${name}`)
+      )
+    ];
+
+    if (fileTitles.length === 0) return [];
+
+    const commonsParams = new URLSearchParams({
+      action: 'query',
+      titles: fileTitles.join('|'),
       prop: 'imageinfo',
       iiprop: 'url|size|mime|extmetadata',
       iiextmetadatafilter: 'Artist|LicenseShortName|Attribution',
@@ -146,14 +166,69 @@ async function searchWikimedia(loc, fallbackCoords = null) {
       format: 'json'
     });
 
-    const res = await fetchWithRetry(`https://commons.wikimedia.org/w/api.php?${params}`, {
-      headers: { Accept: 'application/json' }
-    });
-    const data = await res.json();
-    const candidates = rankCandidates(data?.query?.pages);
+    const commonsRes = await fetchWithRetry(
+      `https://commons.wikimedia.org/w/api.php?${commonsParams}`,
+      { headers: { Accept: 'application/json' } }
+    );
+    const commonsData = await commonsRes.json();
+    return rankCandidates(commonsData?.query?.pages);
+  } catch {
+    return [];
+  }
+}
+
+async function searchCommonsText(searchQuery) {
+  const params = new URLSearchParams({
+    action: 'query',
+    generator: 'search',
+    gsrsearch: `${searchQuery} filetype:bitmap`,
+    gsrnamespace: '6',
+    gsrlimit: '15',
+    prop: 'imageinfo',
+    iiprop: 'url|size|mime|extmetadata',
+    iiextmetadatafilter: 'Artist|LicenseShortName|Attribution',
+    iiurlwidth: '1280',
+    format: 'json'
+  });
+
+  const res = await fetchWithRetry(`https://commons.wikimedia.org/w/api.php?${params}`, {
+    headers: { Accept: 'application/json' }
+  });
+  const data = await res.json();
+  return rankCandidates(data?.query?.pages);
+}
+
+async function searchWikimedia(loc, fallbackCoords = null) {
+  const customQuery = (loc.photoQuery || '').trim();
+  const city = (loc.city || '').trim();
+  const modern = (loc.modernLocation || '').trim();
+
+  const basePlace =
+    modern && city && !modern.toLowerCase().includes(city.toLowerCase())
+      ? `${city} ${modern}`
+      : modern || city;
+
+  const queries = customQuery
+    ? [customQuery]
+    : [...new Set([basePlace, city].filter(Boolean))];
+
+  // 1. Wikipedia human-curated article lead image
+  for (const q of queries) {
+    const wpCandidates = await fetchWikipediaLeadCandidates(q);
+    if (wpCandidates.length > 0) return wpCandidates;
+  }
+
+  // 2. Commons file search (prefers historic/landmark views if no custom photoQuery is set)
+  const commonsQueries = customQuery
+    ? [customQuery]
+    : [...new Set([`${basePlace} historic`, basePlace, city].filter(Boolean))];
+
+  for (const q of commonsQueries) {
+    const candidates = await searchCommonsText(q);
     if (candidates.length > 0) return candidates;
   }
 
+  // 3. Tightened 1.5km geosearch around coordinates
   const coords = loc.coordinates || fallbackCoords;
   const lat = Array.isArray(coords) ? coords[0] : coords?.lat;
   const lng = Array.isArray(coords) ? coords[1] : coords?.lng;
@@ -163,7 +238,7 @@ async function searchWikimedia(loc, fallbackCoords = null) {
       action: 'query',
       generator: 'geosearch',
       ggscoord: `${lat}|${lng}`,
-      ggsradius: '10000',
+      ggsradius: '1500',
       ggsnamespace: '6',
       ggslimit: '15',
       prop: 'imageinfo',
@@ -192,7 +267,7 @@ async function processEntry(entry, game, gameDir, filePath, parsedRoot, fallback
     return false;
   }
 
-  if (currentPhoto) {
+  if (!FORCE_REFRESH && currentPhoto) {
     const cleanRel = currentPhoto.replace(/^\.?\//, '');
     const existingPath = path.resolve(gameDir, cleanRel);
     if (await fileExists(existingPath)) {
@@ -201,7 +276,8 @@ async function processEntry(entry, game, gameDir, filePath, parsedRoot, fallback
     }
   }
 
-  console.log(`✦ Searching Wikimedia Commons for "${entry.city}" (${game.title})...`);
+  const searchLabel = entry.photoQuery ? `${entry.city} [query: "${entry.photoQuery}"]` : entry.city;
+  console.log(`✦ Searching Wikimedia for "${searchLabel}" (${game.title})...`);
   const candidates = await searchWikimedia(entry, fallbackCoords);
 
   if (candidates.length === 0) {
@@ -245,7 +321,7 @@ async function processEntry(entry, game, gameDir, filePath, parsedRoot, fallback
 
   await fs.writeFile(filePath, JSON.stringify(parsedRoot, null, 2) + '\n', 'utf8');
   console.log(
-    `  Saved -> ${path.relative(process.cwd(), outPath)} (${savedCandidate.credit})`
+    `  Saved -> ${path.relative(process.cwd(), outPath)} [${savedCandidate.title}] (${savedCandidate.credit})`
   );
 
   await sleep(1500);
@@ -262,6 +338,9 @@ async function syncFile(filePath) {
 
   for (const game of games) {
     if (!game || !Array.isArray(game.locations)) continue;
+
+    const gameSlug = slugify(game.id || path.basename(gameDir));
+    if (GAME_FILTER && gameSlug !== GAME_FILTER) continue;
 
     for (const loc of game.locations) {
       if (Array.isArray(loc.subLocations) && loc.subLocations.length > 0) {
@@ -295,8 +374,8 @@ async function main() {
 
   console.log(
     totalUpdated > 0
-      ? `\nSynced ${totalUpdated} new postcard photo(s) from Wikimedia Commons.`
-      : '\nAll postcards already have photos. Nothing to download.'
+      ? `\nSynced ${totalUpdated} postcard photo(s) from Wikimedia Commons.`
+      : '\nAll postcards already have photos. Use --force to re-download.'
   );
 }
 
