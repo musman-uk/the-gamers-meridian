@@ -21,7 +21,7 @@
       "quote": "In and out. Fifteen minutes. Nobody gets hurt.",
       "quoteContext": "Harry Flynn pitching the Museum Heist to Nate",
       "spatialNote": "Moonlit museum stealth infiltration across Ottoman domes and ancient sewers.",
-      "photo": "./images/u2/u2-istanbul.webp",
+      "photo": "images/u2-istanbul.webp",
       "ref": "REF-U2-IST",
       "photoCredit": "A.Savin / FAL"
     },
@@ -40,7 +40,7 @@
       "quote": "Good news is we found Marco Polo's lost fleet. Bad news is Lazarevic found it first.",
       "quoteContext": "Nate and Chloe inspecting the expedition camp",
       "spatialNote": "Jungle firefights among moss-covered tidal swamps and ancient ship hulks.",
-      "photo": "./images/u2/u2-borneo.webp",
+      "photo": "images/u2-borneo.webp",
       "ref": "REF-U2-BOR",
       "photoCredit": "Urbain J. Kinet / No restrictions"
     },
@@ -59,7 +59,7 @@
       "quote": "Well, look on the bright side. We don't have to pay for a hotel room.",
       "quoteContext": "Nate and Elena taking cover in a Nepalese alleyway",
       "spatialNote": "Vertical traversal across street barricades, hotel collapses, and pagodas.",
-      "photo": "./images/u2/u2-kathmandu.webp",
+      "photo": "images/u2-kathmandu.webp",
       "ref": "REF-U2-KTM",
       "photoCredit": "A Vahanvaty from Dubai, UAE / CC BY-SA 2.0"
     },
@@ -78,7 +78,7 @@
       "quote": "There's a guy above you! ...There's a bear above you!",
       "quoteContext": "Tenzin leading Nate through ice caves",
       "spatialNote": "Cliffside train derailment hanging over a 2,000-foot vertical drop.",
-      "photo": "./images/u2/u2-himalayas.webp",
+      "photo": "images/u2-himalayas.webp",
       "ref": "REF-U2-HIM",
       "photoCredit": "© Vyacheslav Argenberg / CC BY 4.0"
     },
@@ -97,7 +97,7 @@
       "quote": "The Cintamani Stone isn't a sapphire. It's petrified tree resin from the Tree of Life.",
       "quoteContext": "Nate uncovering the truth inside the Golden Sanctuary",
       "spatialNote": "Mythical lost city hidden behind ice cliffs with glowing blue resin pools.",
-      "photo": "./images/u2/u2-shambhala.webp",
+      "photo": "images/u2-shambhala.webp",
       "ref": "REF-U2-SHM",
       "photoCredit": "Christophe Badoux / CC0"
     }

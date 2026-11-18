@@ -21,7 +21,7 @@
       "quote": "First one to the top wins! Try not to fall behind, brother.",
       "quoteContext": "Ezio challenging Federico to a rooftop race across Florence",
       "spatialNote": "Features Brunelleschi's Duomo and Palazzo Vecchio in compressed urban proportions.",
-      "photo": "./images/ac2/ac2-florence.webp",
+      "photo": "images/ac2-florence.webp",
       "ref": "REF-AC2-FLR",
       "photoCredit": "Eusebius / CC BY 3.0"
     },
@@ -40,7 +40,7 @@
       "quote": "Welcome to Villa Auditore. Here lies the legacy of your ancestor.",
       "quoteContext": "Mario Auditore introducing Ezio to the sanctuary",
       "spatialNote": "Ring of 14 watchtowers encircling Villa Auditore.",
-      "photo": "./images/ac2/ac2-monteriggioni.webp",
+      "photo": "images/ac2-monteriggioni.webp",
       "ref": "REF-AC2-MTR",
       "photoCredit": "Lorenzo Gaudenzi / CC BY-SA 4.0"
     },
@@ -59,7 +59,7 @@
       "quote": "Towers reach for the heavens, but Templar greed roots them to the dirt.",
       "quoteContext": "Infiltrating the Pazzi conspirator towers",
       "spatialNote": "Medieval skyscrapers offering extreme vertical parkour vantage points.",
-      "photo": "./images/ac2/ac2-san-gimignano.webp",
+      "photo": "images/ac2-san-gimignano.webp",
       "ref": "REF-AC2-SGM",
       "photoCredit": "Julian Lupyan / CC0"
     },
@@ -78,7 +78,7 @@
       "quote": "I have the instruments, and more importantly, the courage to use them!",
       "quoteContext": "Caterina Sforza defending Ravaldino Fortress",
       "spatialNote": "Marshland wetlands combined with the imposing stone moat of Ravaldino.",
-      "photo": "./images/ac2/ac2-forli.webp",
+      "photo": "images/ac2-forli.webp",
       "ref": "REF-AC2-FRL",
       "photoCredit": "Sailko / CC BY-SA 4.0"
     },
@@ -97,7 +97,7 @@
       "quote": "If you want to move unseen in Venice, learn to swim in its shadows and canals.",
       "quoteContext": "Rosa guiding Ezio through the Rialto district",
       "spatialNote": "Recreates St. Mark's Campanile and the Grand Canal network.",
-      "photo": "./images/ac2/ac2-venice.webp",
+      "photo": "images/ac2-venice.webp",
       "ref": "REF-AC2-VNC",
       "photoCredit": "Didier Descouens / CC BY-SA 4.0"
     },
@@ -116,7 +116,7 @@
       "quote": "I thought... I thought I was over this. But I cannot forgive.",
       "quoteContext": "Ezio confrontation beneath St. Peter's Basilica",
       "spatialNote": "Captures Old St. Peter's Basilica leading into an ancient Precursor Vault.",
-      "photo": "./images/ac2/ac2-vatican.webp",
+      "photo": "images/ac2-vatican.webp",
       "ref": "REF-AC2-VAT",
       "photoCredit": "© User:Colin / Wikimedia Commons / CC BY-SA 3.0"
     }
