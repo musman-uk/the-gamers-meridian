@@ -12,14 +12,18 @@
       "dispatchLocation": "Istanbul, Turkey",
       "modernLocation": "Istanbul, Turkey",
       "settingEra": "Modern Day (Shambhala Expedition)",
-      "coordinates": { "lat": 41.0082, "lng": 28.9784 },
+      "coordinates": {
+        "lat": 41.0082,
+        "lng": 28.9784
+      },
       "icon": "fa-gem",
       "tagline": "Palace Museum Heist & Ottoman Sewers",
       "quote": "In and out. Fifteen minutes. Nobody gets hurt.",
       "quoteContext": "Harry Flynn pitching the Museum Heist to Nate",
       "spatialNote": "Moonlit museum stealth infiltration across Ottoman domes and ancient sewers.",
-      "photo": "",
-      "ref": "REF-U2-IST"
+      "photo": "./images/u2/u2-istanbul.webp",
+      "ref": "REF-U2-IST",
+      "photoCredit": "A.Savin / FAL"
     },
     {
       "id": "u2-borneo",
@@ -27,14 +31,18 @@
       "dispatchLocation": "Borneo, Southeast Asia",
       "modernLocation": "Borneo, Malaysia",
       "settingEra": "Modern Day (Shambhala Expedition)",
-      "coordinates": { "lat": 4.2105, "lng": 114.2882 },
+      "coordinates": {
+        "lat": 4.2105,
+        "lng": 114.2882
+      },
       "icon": "fa-tree",
       "tagline": "Marco Polo Shipwreck Camp & Swamplands",
       "quote": "Good news is we found Marco Polo's lost fleet. Bad news is Lazarevic found it first.",
       "quoteContext": "Nate and Chloe inspecting the expedition camp",
       "spatialNote": "Jungle firefights among moss-covered tidal swamps and ancient ship hulks.",
-      "photo": "",
-      "ref": "REF-U2-BOR"
+      "photo": "./images/u2/u2-borneo.webp",
+      "ref": "REF-U2-BOR",
+      "photoCredit": "Urbain J. Kinet / No restrictions"
     },
     {
       "id": "u2-kathmandu",
@@ -42,14 +50,18 @@
       "dispatchLocation": "Kathmandu, Nepal",
       "modernLocation": "Kathmandu, Nepal",
       "settingEra": "Modern Day (Shambhala Expedition)",
-      "coordinates": { "lat": 27.7172, "lng": 85.324 },
+      "coordinates": {
+        "lat": 27.7172,
+        "lng": 85.324
+      },
       "icon": "fa-mountain",
       "tagline": "War-Torn Urban Streets & Temple Roofs",
       "quote": "Well, look on the bright side. We don't have to pay for a hotel room.",
       "quoteContext": "Nate and Elena taking cover in a Nepalese alleyway",
       "spatialNote": "Vertical traversal across street barricades, hotel collapses, and pagodas.",
-      "photo": "",
-      "ref": "REF-U2-KTM"
+      "photo": "./images/u2/u2-kathmandu.webp",
+      "ref": "REF-U2-KTM",
+      "photoCredit": "A Vahanvaty from Dubai, UAE / CC BY-SA 2.0"
     },
     {
       "id": "u2-himalayas",
@@ -57,14 +69,18 @@
       "dispatchLocation": "Himalayas, Nepal",
       "modernLocation": "Himalayas, Nepal",
       "settingEra": "Modern Day (Shambhala Expedition)",
-      "coordinates": { "lat": 27.9881, "lng": 86.925 },
+      "coordinates": {
+        "lat": 27.9881,
+        "lng": 86.925
+      },
       "icon": "fa-snowflake",
       "tagline": "Train Wreck Cliffhangers & Mountain Shrine",
       "quote": "There's a guy above you! ...There's a bear above you!",
       "quoteContext": "Tenzin leading Nate through ice caves",
       "spatialNote": "Cliffside train derailment hanging over a 2,000-foot vertical drop.",
-      "photo": "",
-      "ref": "REF-U2-HIM"
+      "photo": "./images/u2/u2-himalayas.webp",
+      "ref": "REF-U2-HIM",
+      "photoCredit": "© Vyacheslav Argenberg / CC BY 4.0"
     },
     {
       "id": "u2-shambhala",
@@ -72,14 +88,18 @@
       "dispatchLocation": "Shambhala, Lost City",
       "modernLocation": "Himalayan Range (Mythical Realm)",
       "settingEra": "Modern Day (Shambhala Expedition)",
-      "coordinates": { "lat": 29.6516, "lng": 91.1378 },
+      "coordinates": {
+        "lat": 29.6516,
+        "lng": 91.1378
+      },
       "icon": "fa-spa",
       "tagline": "Tree of Life & Overgrown Ancient Valley",
       "quote": "The Cintamani Stone isn't a sapphire. It's petrified tree resin from the Tree of Life.",
       "quoteContext": "Nate uncovering the truth inside the Golden Sanctuary",
       "spatialNote": "Mythical lost city hidden behind ice cliffs with glowing blue resin pools.",
-      "photo": "",
-      "ref": "REF-U2-SHM"
+      "photo": "./images/u2/u2-shambhala.webp",
+      "ref": "REF-U2-SHM",
+      "photoCredit": "Christophe Badoux / CC0"
     }
   ]
 }

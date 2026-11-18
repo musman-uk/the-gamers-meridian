@@ -12,14 +12,18 @@
       "dispatchLocation": "Amazon Basin, South America",
       "modernLocation": "Amazon Rainforest, Brazil",
       "settingEra": "Modern Day (El Dorado Expedition)",
-      "coordinates": { "lat": -3.4653, "lng": -62.2159 },
+      "coordinates": {
+        "lat": -3.4653,
+        "lng": -62.2159
+      },
       "icon": "fa-compass",
       "tagline": "Sunken German U-Boat & Jungle Canyon",
       "quote": "There's a German U-boat in the middle of the Amazon jungle. Tell me that's not weird.",
       "quoteContext": "Nathan Drake examining the river canyon wreckage",
       "spatialNote": "Dense foliage layering and wet-surfaced stone physics inside jungle ravines.",
-      "photo": "",
-      "ref": "REF-U1-AMZ"
+      "photo": "./images/u1/u1-amazon.webp",
+      "ref": "REF-U1-AMZ",
+      "photoCredit": "NASA Expedition 20 crew / Public domain"
     },
     {
       "id": "u1-island",
@@ -27,14 +31,18 @@
       "dispatchLocation": "Uncharted Island, Pacific",
       "modernLocation": "Pacific Ocean",
       "settingEra": "Modern Day (El Dorado Expedition)",
-      "coordinates": { "lat": -14.235, "lng": -170.6823 },
+      "coordinates": {
+        "lat": -14.235,
+        "lng": -170.6823
+      },
       "icon": "fa-skull-crossbones",
       "tagline": "Spanish Colony Ruins & Custom House",
       "quote": "Drake... we're sitting on a goldmine. Literally.",
       "quoteContext": "Sully discovering the Golden Man in the island vault",
       "spatialNote": "16th-century Spanish fortresses with subterranean bunker tunnels.",
-      "photo": "",
-      "ref": "REF-U1-ISL"
+      "photo": "./images/u1/u1-island.webp",
+      "ref": "REF-U1-ISL",
+      "photoCredit": "I, Brocken Inaglory / CC BY-SA 3.0"
     }
   ]
 }
