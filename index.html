@@ -91,8 +91,8 @@
   <!-- Sender's Stamp Modal (Chamfered Codex Plate) -->
   <div id="stampModal" class="modal-overlay" aria-hidden="true">
     <div class="codex-plate-wrap max-w-lg w-[92%]">
-      <div class="codex-plate p-6 sm:p-8 relative">
-        <div class="flex items-center justify-between pb-3 mb-4 border-b border-amber-400/20">
+      <div class="codex-plate px-6 pt-8 pb-6 sm:px-8 sm:pt-10 sm:pb-7 relative">
+        <div class="flex items-center justify-between pb-3.5 mb-5 border-b border-amber-400/20">
           <div class="flex items-center gap-2.5">
             <span class="journal-accent text-sm">✦</span>
             <h2 class="text-xl sm:text-2xl font-bold font-serif text-[#f8f3e6] tracking-wide leading-tight">Sender's Stamp</h2>
@@ -100,20 +100,24 @@
           <button id="stampClose" class="w-7 h-7 rounded-sm bg-white/5 hover:bg-amber-500/20 border border-amber-400/25 flex items-center justify-center text-slate-400 hover:text-amber-200 transition-colors text-base cursor-pointer" aria-label="Close Modal">&times;</button>
         </div>
 
-        <div class="text-xs sm:text-[13.5px] text-slate-300 space-y-3.5 leading-relaxed">
+        <div class="text-xs sm:text-[13.5px] text-slate-300 space-y-4 leading-relaxed">
           <p>
             In cartography, a <strong class="text-[#f8f3e6] font-semibold">meridian</strong> is a line of longitude stretching from pole to pole, used as a fixed reference to pinpoint where you stand on Earth. Here, it marks the line where virtual worlds meet real geography.
           </p>
           <p>
-            Whenever I play a game set in an old city, a rugged coast, or a distant mountain range, I always catch myself wondering where in the real world I would actually be standing. I built <strong class="text-[#f8f3e6] font-semibold">The Gamer's Meridian</strong> for that exact curiosity, where you can open the Travel Journal, look up beloved titles, and pin those adventures onto your own globe.
+            Whenever a game unfolds in an old city, along a rugged coast, or across a distant mountain range, it is easy to wonder where in the real world you would actually be standing. <strong class="text-[#f8f3e6] font-semibold">The Gamer's Meridian</strong> was built for that exact curiosity, where you can open the Travel Journal, look up beloved titles, and pin those adventures onto your own globe.
           </p>
         </div>
 
-        <div class="mt-6 pt-3.5 border-t border-dashed border-amber-400/25 flex justify-end items-center">
+        <div class="mt-8 pt-3.5 border-t border-dashed border-amber-400/25 flex justify-end items-center">
           <a href="https://github.com/musman-uk" target="_blank" rel="noopener noreferrer" class="journal-accent hover:text-amber-200 hover:underline underline-offset-4 font-bold font-handwriting text-lg tracking-wide transition-colors">
             Mohammed Usman
           </a>
         </div>
+
+        <p class="mt-6 text-center text-[10px] font-mono tracking-wider text-slate-400/55 select-none">
+          © Mohammed Usman
+        </p>
       </div>
     </div>
   </div>
@@ -233,9 +237,10 @@
               </div>
             </div>
 
-            <div class="pt-1.5 border-t border-slate-300 flex justify-between items-center text-[8.5px] sm:text-[9px] text-slate-500 font-mono shrink-0">
-              <span>Ref ID: <span id="pcRefId">REF-000</span></span>
-              <span>Pictorial Post Card</span>
+            <div class="pt-1.5 border-t border-slate-300 flex justify-between items-center gap-3 text-[8.5px] sm:text-[9px] text-slate-500 font-mono shrink-0">
+              <span class="shrink-0">Ref ID: <span id="pcRefId">REF-000</span></span>
+              <span id="pcPhotoCredit" class="hidden truncate text-center"></span>
+              <span class="shrink-0">Pictorial Post Card</span>
             </div>
 
           </div>
