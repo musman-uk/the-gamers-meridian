@@ -42,4 +42,3 @@ Version `0.0.0` – Unpublished
 
 <sub>© Mohammed Usman</sub>
 
-<sub>All rights reserved. No commercial use, redistribution, or derivatives.</sub>
