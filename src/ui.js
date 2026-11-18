@@ -1,6 +1,13 @@
 const STORAGE_KEY_PINNED = 'gp_pinned_locations_v1';
 const FALLBACK_PHOTO = `${import.meta.env.BASE_URL}textures/default-dispatch.jpg`;
 
+function resolvePhotoUrl(photo) {
+  if (!photo) return FALLBACK_PHOTO;
+  if (/^https?:\/\//i.test(photo)) return photo;
+  const cleanPath = photo.replace(/^\.?\//, '');
+  return `${import.meta.env.BASE_URL}${cleanPath}`;
+}
+
 const PIN_SVG = `<svg class="w-2.5 h-2.5" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M32 32C32 14.3 46.3 0 64 0H320c17.7 0 32 14.3 32 32s-14.3 32-32 32H290.5l11.4 148.2c36.7 19.9 65.7 53.2 79.5 94.7l1 3c3.3 9.8 1.6 20.5-4.4 28.8s-15.7 13.3-26 13.3H32c-10.3 0-19.9-4.9-26-13.3s-7.7-19.1-4.4-28.8l1-3c13.8-41.5 42.8-74.8 79.5-94.7L93.5 64H64C46.3 64 32 49.7 32 32zM160 384h64v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V384z"/></svg>`;
 
 let currentActiveLoc = null;
@@ -343,6 +350,7 @@ export function openPostcardModal(loc, subId = null) {
       quoteContext: loc.quoteContext,
       spatialNote: loc.spatialNote,
       photo: loc.photo,
+      photoCredit: loc.photoCredit,
       ref: loc.ref,
       game: loc.game,
       tagline: loc.tagline,
@@ -377,6 +385,7 @@ function switchSubTab(subId) {
     quoteContext: sub.quoteContext,
     spatialNote: sub.spatialNote,
     photo: sub.photo,
+    photoCredit: sub.photoCredit,
     ref: sub.ref,
     game: currentActiveLoc.game,
     tagline: `${sub.city} Dispatch • ${currentActiveLoc.city}`,
@@ -387,7 +396,20 @@ function switchSubTab(subId) {
 }
 
 function renderCardData(data) {
-  document.getElementById('pcFrontImg').src = data.photo || FALLBACK_PHOTO;
+  const frontImg = document.getElementById('pcFrontImg');
+  frontImg.onerror = () => {
+    frontImg.onerror = null;
+    frontImg.src = FALLBACK_PHOTO;
+  };
+  frontImg.src = resolvePhotoUrl(data.photo);
+  frontImg.title = data.photoCredit ? `Photo: ${data.photoCredit}` : '';
+
+  const creditEl = document.getElementById('pcPhotoCredit');
+  if (creditEl) {
+    creditEl.textContent = data.photoCredit || '';
+    creditEl.classList.toggle('hidden', !data.photoCredit);
+  }
+
   document.getElementById('pcGameBadge').textContent = data.game;
   document.getElementById('pcFrontLocation').textContent = data.dispatchLocation;
   document.getElementById('pcTitle').textContent = data.city;
