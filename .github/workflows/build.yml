@@ -42,8 +42,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          mkdir -p public/images
-          git add public/images src/data
+          git add src/data
           if ! git diff --staged --quiet; then
             git commit -m "chore: sync postcard images from Wikimedia Commons"
             git pull --rebase origin ${{ github.ref_name }}
