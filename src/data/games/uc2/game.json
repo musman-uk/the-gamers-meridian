@@ -1,8 +1,8 @@
 {
   "id": "u2",
-  "volNum": "VOLUME IV",
-  "title": "Shambhala Expedition (Modern)",
-  "franchise": "Uncharted 2: Among Thieves",
+  "order": 202,
+  "title": "Uncharted 2: Among Thieves",
+  "subtitle": "Modern Day",
   "color": "#0f766e",
   "themeClass": "theme-u2",
   "locations": [
