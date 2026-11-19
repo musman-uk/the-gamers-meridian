@@ -260,7 +260,9 @@ html, body {
   top: 0;
   left: 0;
   bottom: 0;
+  height: 100dvh;
   width: min(100vw, 420px);
+  padding-bottom: calc(clamp(1rem, 2.5vw, 1.5rem) + env(safe-area-inset-bottom));
   z-index: 150;
   background: linear-gradient(90deg, #070b14 0%, #0b101d 18px, #0a0e17 100%);
   border-right: 1px solid rgba(212, 175, 55, 0.3);
@@ -449,9 +451,11 @@ html, body {
 
 /* Archival Brass Bookmark Scroller & Edge Fade */
 .scrollable-panel {
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   scrollbar-width: thin;
   scrollbar-color: rgba(212, 175, 55, 0.38) rgba(10, 14, 23, 0.4);
 }
