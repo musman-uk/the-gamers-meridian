@@ -23,6 +23,11 @@ let lastSolarUpdate = 0;
 const UK_CENTER_ROTATION_Y = -Math.PI / 2;
 const CLASSIC_TILT_RAD = THREE.MathUtils.degToRad(-23.44);
 
+function getHomeDistance() {
+  const aspect = window.innerWidth / window.innerHeight;
+  return aspect < 1 ? Math.min(560, 235 / aspect) : 220;
+}
+
 const raycaster = new THREE.Raycaster();
 const mouseVector = new THREE.Vector2();
 
@@ -114,8 +119,9 @@ export function initGlobe(locations, onSelectLocation) {
   scene.fog = new THREE.FogExp2(0x020617, 0.001);
 
   const aspect = window.innerWidth / window.innerHeight;
+  const homeDist = getHomeDistance();
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-  camera.position.set(0, 0, aspect < 1 ? 220 / aspect : 220);
+  camera.position.set(0, 0, homeDist);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -128,7 +134,7 @@ export function initGlobe(locations, onSelectLocation) {
   controls.dampingFactor = 0.05;
   controls.enablePan = false;
   controls.minDistance = 115;
-  controls.maxDistance = 420;
+  controls.maxDistance = Math.max(420, homeDist * 1.35);
   controls.rotateSpeed = 0.8;
   controls.mouseButtons.RIGHT = null;
 
@@ -217,8 +223,7 @@ export function initGlobe(locations, onSelectLocation) {
       isModalOpenState = open;
       // Gently pull back to full-globe distance when closing a card, keeping the current region & classic tilt centered
       if (!open && camera && controls) {
-        const aspect = window.innerWidth / window.innerHeight;
-        const homeDist = aspect < 1 ? 220 / aspect : 220;
+        const homeDist = getHomeDistance();
         const currentDir = camera.position.clone().normalize();
 
         gsap.killTweensOf([camera.position]);
@@ -250,8 +255,7 @@ export function setGlobeMode(mode) {
   controls.enabled = true;
   camera.up.set(0, 1, 0);
 
-  const aspect = window.innerWidth / window.innerHeight;
-  const homeDist = aspect < 1 ? 220 / aspect : 220;
+  const homeDist = getHomeDistance();
 
   if (globeMode === 'realtime' && solar) {
     // Rotate the globe around its tilted polar axis so the live subsolar meridian faces +Z
@@ -613,9 +617,20 @@ function updateScreenBadges() {
 }
 
 function onResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  const currentDist = Math.min(controls.maxDistance, Math.max(controls.minDistance, camera.position.length()));
-  camera.position.setLength(currentDist);
+  const prevAspect = camera.aspect;
+  const nextAspect = window.innerWidth / window.innerHeight;
+  const homeDist = getHomeDistance();
+
+  camera.aspect = nextAspect;
+  controls.maxDistance = Math.max(420, homeDist * 1.35);
+
+  if ((prevAspect < 1) !== (nextAspect < 1)) {
+    camera.position.setLength(homeDist);
+  } else {
+    const currentDist = Math.min(controls.maxDistance, Math.max(controls.minDistance, camera.position.length()));
+    camera.position.setLength(currentDist);
+  }
+
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
