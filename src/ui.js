@@ -11,6 +11,7 @@ function resolvePhotoUrl(photo) {
 const PIN_SVG = `<svg class="w-2.5 h-2.5" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M32 32C32 14.3 46.3 0 64 0H320c17.7 0 32 14.3 32 32s-14.3 32-32 32H290.5l11.4 148.2c36.7 19.9 65.7 53.2 79.5 94.7l1 3c3.3 9.8 1.6 20.5-4.4 28.8s-15.7 13.3-26 13.3H32c-10.3 0-19.9-4.9-26-13.3s-7.7-19.1-4.4-28.8l1-3c13.8-41.5 42.8-74.8 79.5-94.7L93.5 64H64C46.3 64 32 49.7 32 32zM160 384h64v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V384z"/></svg>`;
 
 let currentActiveLoc = null;
+let lastFocusedBeforeModal = null;
 let setGlobeModalStateRef = null;
 let setGlobeModeRef = null;
 let setPinVisibilityRef = null;
@@ -69,14 +70,44 @@ function syncPinStatesToGlobe() {
 
 function setDrawerOpen(bookletDrawer, open) {
   if (!bookletDrawer) return;
-  bookletDrawer.classList.toggle('is-open', open);
-  bookletDrawer.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    bookletDrawer.removeAttribute('inert');
+    bookletDrawer.setAttribute('aria-hidden', 'false');
+    bookletDrawer.classList.add('is-open');
+  } else {
+    if (bookletDrawer.contains(document.activeElement)) {
+      const albumToggle = document.getElementById('albumToggle');
+      if (albumToggle) {
+        albumToggle.focus({ preventScroll: true });
+      } else {
+        document.activeElement.blur();
+      }
+    }
+    bookletDrawer.classList.remove('is-open');
+    bookletDrawer.setAttribute('aria-hidden', 'true');
+    bookletDrawer.setAttribute('inert', '');
+  }
 }
 
 function setStampModalOpen(stampModal, open) {
   if (!stampModal) return;
-  stampModal.classList.toggle('is-open', open);
-  stampModal.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    stampModal.removeAttribute('inert');
+    stampModal.setAttribute('aria-hidden', 'false');
+    stampModal.classList.add('is-open');
+  } else {
+    if (stampModal.contains(document.activeElement)) {
+      const stampToggle = document.getElementById('stampToggle');
+      if (stampToggle) {
+        stampToggle.focus({ preventScroll: true });
+      } else {
+        document.activeElement.blur();
+      }
+    }
+    stampModal.classList.remove('is-open');
+    stampModal.setAttribute('aria-hidden', 'true');
+    stampModal.setAttribute('inert', '');
+  }
 }
 
 export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeControls = {}) {
@@ -132,6 +163,8 @@ export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeC
   const stampModal = document.getElementById('stampModal');
   const stampClose = document.getElementById('stampClose');
 
+  setStampModalOpen(stampModal, false);
+
   if (stampToggle) {
     stampToggle.onclick = () => setStampModalOpen(stampModal, true);
   }
@@ -152,6 +185,7 @@ export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeC
 
   if (postcardModal) {
     postcardModal.setAttribute('aria-hidden', 'true');
+    postcardModal.setAttribute('inert', '');
     postcardModal.onclick = (e) => {
       if (e.target === postcardModal || e.target === postcardWrapper) {
         closePostcardModal();
@@ -314,6 +348,7 @@ function buildTravelJournalDrawer(gamesCatalog, onFlyToLocation) {
 
 export function openPostcardModal(loc, subId = null) {
   currentActiveLoc = loc;
+  lastFocusedBeforeModal = document.activeElement;
   if (setGlobeModalStateRef) setGlobeModalStateRef(true);
 
   const modal = document.getElementById('postcardModal');
@@ -360,6 +395,7 @@ export function openPostcardModal(loc, subId = null) {
     });
   }
 
+  modal.removeAttribute('inert');
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.setAttribute('aria-hidden', 'false');
   wrapper.classList.remove('scale-75');
@@ -450,10 +486,19 @@ function closePostcardModal() {
   const wrapper = document.getElementById('postcardWrapper');
   const card = document.getElementById('postcardCard');
 
+  if (modal && modal.contains(document.activeElement)) {
+    if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function' && document.contains(lastFocusedBeforeModal)) {
+      lastFocusedBeforeModal.focus({ preventScroll: true });
+    } else {
+      document.activeElement.blur();
+    }
+  }
+
   wrapper.classList.remove('scale-100');
   wrapper.classList.add('scale-75');
   modal.classList.add('opacity-0', 'pointer-events-none');
   modal.setAttribute('aria-hidden', 'true');
+  modal.setAttribute('inert', '');
 
   if (setGlobeModalStateRef) setGlobeModalStateRef(false);
   setTimeout(() => card.classList.remove('rotate-y-180'), 300);
