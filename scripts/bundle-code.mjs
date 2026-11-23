@@ -1,6 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const siteName = path.basename(process.cwd());
+const outputFile = `${siteName}-code.txt`;
+
 const IGNORED_DIRS = new Set([
   'node_modules',
   '.git',
@@ -16,7 +19,11 @@ const ALLOWED_EXTS = new Set(['.html', '.css', '.js', '.mjs', '.json', '.md']);
 function collectFiles(dir) {
   const results = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (IGNORED_DIRS.has(entry.name) || IGNORED_FILES.has(entry.name)) {
+    if (
+      IGNORED_DIRS.has(entry.name) ||
+      IGNORED_FILES.has(entry.name) ||
+      entry.name.endsWith('-code.txt')
+    ) {
       continue;
     }
     const fullPath = path.join(dir, entry.name);
@@ -31,7 +38,7 @@ function collectFiles(dir) {
 
 const files = collectFiles('.').sort();
 
-const bundle = files
+const body = files
   .map((file) => {
     const normalized = file.replaceAll('\\', '/');
     const raw = fs.readFileSync(file, 'utf8');
@@ -40,7 +47,8 @@ const bundle = files
   })
   .join('\n');
 
-fs.writeFileSync('code.txt', bundle, 'utf8');
+const bundle = `=== ${siteName} ===\n\n${body}`;
+fs.writeFileSync(outputFile, bundle, 'utf8');
 
-const sizeKB = (fs.statSync('code.txt').size / 1024).toFixed(1);
-console.log(`Bundled ${files.length} files into code.txt (${sizeKB} KB)`);
+const sizeKB = (fs.statSync(outputFile).size / 1024).toFixed(1);
+console.log(`Bundled ${files.length} files into ${outputFile} (${sizeKB} KB)`);
