@@ -9,6 +9,7 @@ import earthCloudsUrl from './textures/earth_clouds.png';
 
 let scene, camera, renderer, controls;
 let earthTiltGroup, globeMesh, cloudMesh, sunLight, ambientLight;
+let meridianMaterial = null;
 const pinObjects = [];
 let locationsData = [];
 
@@ -18,14 +19,36 @@ let activePointerId = null;
 let isModalOpenState = false;
 let globeMode = 'drift'; // 'drift' (Classic) | 'realtime' (Live)
 let lastSolarUpdate = 0;
+let mastheadEl = null;
+let isMastheadHidden = false;
 
-// -PI / 2 rotates Longitude 0° (London / Prime Meridian) directly toward +Z (front camera)
-const UK_CENTER_ROTATION_Y = -Math.PI / 2;
+const UK_WESTWARD_NUDGE_DEG = 7.25;
+const INITIAL_CAMERA_ELEVATION_DEG = 21.5;
+
+// -PI / 2 aligns Longitude 0° before the 23.44° tilt; nudging ~7.25° west centers the UK
+const UK_CENTER_ROTATION_Y = -Math.PI / 2 - THREE.MathUtils.degToRad(UK_WESTWARD_NUDGE_DEG);
 const CLASSIC_TILT_RAD = THREE.MathUtils.degToRad(-23.44);
+const INITIAL_CAMERA_ELEVATION_RAD = THREE.MathUtils.degToRad(INITIAL_CAMERA_ELEVATION_DEG);
 
 function getHomeDistance() {
   const aspect = window.innerWidth / window.innerHeight;
-  return aspect < 1 ? Math.min(560, 235 / aspect) : 220;
+  return aspect < 1 ? Math.min(620, 275 / aspect) : 260;
+}
+
+function getHomeCameraPosition(dist = getHomeDistance()) {
+  return new THREE.Vector3(
+    0,
+    Math.sin(INITIAL_CAMERA_ELEVATION_RAD) * dist,
+    Math.cos(INITIAL_CAMERA_ELEVATION_RAD) * dist
+  );
+}
+
+function applyCameraViewOffset(width, height) {
+  if (!camera) return;
+  const isNarrow = width < 640;
+  // Nudge the globe slightly downward in the frame so tablet, laptop, and mobile headers have clear headroom
+  const yOffset = -height * (isNarrow ? 0.045 : 0.038);
+  camera.setViewOffset(width, height, 0, yOffset, width, height);
 }
 
 const raycaster = new THREE.Raycaster();
@@ -70,26 +93,30 @@ function applySolarLighting() {
   sunLight.intensity = 2.0;
   ambientLight.intensity = 0.65;
 
-  if (globeMode === 'realtime') {
-    const solar = getLiveSolarPosition(260);
-    // Align the sun to the classic 23.44° tilt plane facing the front noon meridian (+Z),
-    // shifted slightly north/south by the live seasonal declination
-    const decRad = THREE.MathUtils.degToRad(solar.declination);
-    const sunDir = new THREE.Vector3(
-      -Math.sin(CLASSIC_TILT_RAD) * Math.sin(decRad),
-      Math.cos(CLASSIC_TILT_RAD) * Math.sin(decRad),
-      Math.cos(decRad)
-    ).normalize().multiplyScalar(260);
+  let solar = null;
 
-    sunLight.position.copy(sunDir);
-    return solar;
+  if (globeMode === 'realtime') {
+    solar = getLiveSolarPosition(260);
+    // Anchor the live sun position to Earth's actual geography (rotating with globeMesh and axial tilt)
+    const rotY = globeMesh ? globeMesh.rotation.y : UK_CENTER_ROTATION_Y;
+    const sunWorldPos = solar.vector
+      .clone()
+      .applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+      .applyAxisAngle(new THREE.Vector3(0, 0, 1), CLASSIC_TILT_RAD);
+
+    sunLight.position.copy(sunWorldPos);
   } else {
     // Classic: place the sun perpendicular to Earth's 23.44° tilted axis
     const sunX = Math.cos(CLASSIC_TILT_RAD) * 260;
     const sunY = Math.sin(CLASSIC_TILT_RAD) * 260;
     sunLight.position.set(sunX, sunY, 60);
-    return null;
   }
+
+  if (meridianMaterial) {
+    meridianMaterial.uniforms.uSunDir.value.copy(sunLight.position).normalize();
+  }
+
+  return solar;
 }
 
 function isPointerOverGlobe(event) {
@@ -108,6 +135,7 @@ function recordInteraction(e) {
 
 export function initGlobe(locations, onSelectLocation) {
   locationsData = locations;
+  meridianMaterial = null;
 
   const container = document.getElementById('webgl-container');
   container.innerHTML = '';
@@ -121,7 +149,8 @@ export function initGlobe(locations, onSelectLocation) {
   const aspect = window.innerWidth / window.innerHeight;
   const homeDist = getHomeDistance();
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-  camera.position.set(0, 0, homeDist);
+  camera.position.copy(getHomeCameraPosition(homeDist));
+  applyCameraViewOffset(window.innerWidth, window.innerHeight);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -215,7 +244,7 @@ export function initGlobe(locations, onSelectLocation) {
 
   window.addEventListener('resize', onResize);
 
-  animate();
+  requestAnimationFrame(animate);
 
   return {
     flyToAndOpenLocation,
@@ -256,82 +285,48 @@ export function setGlobeMode(mode) {
   camera.up.set(0, 1, 0);
 
   const homeDist = getHomeDistance();
+  const homeCamPos = getHomeCameraPosition(homeDist);
 
-  if (globeMode === 'realtime' && solar) {
-    // Rotate the globe around its tilted polar axis so the live subsolar meridian faces +Z
-    const rawTargetRotY = -Math.PI / 2 - THREE.MathUtils.degToRad(solar.subsolarLng);
-    const currentRotY = globeMesh.rotation.y;
-    const shortestDeltaY = Math.atan2(Math.sin(rawTargetRotY - currentRotY), Math.cos(rawTargetRotY - currentRotY));
-    const finalGlobeRotY = currentRotY + shortestDeltaY;
+  // Live rotates around the tilted polar axis to wherever daylight is; Classic returns to the UK
+  const rawTargetRotY = (globeMode === 'realtime' && solar)
+    ? -Math.PI / 2 - THREE.MathUtils.degToRad(solar.subsolarLng)
+    : UK_CENTER_ROTATION_Y;
 
-    const subsolarPos = latLngToVector3(solar.declination * 0.65, solar.subsolarLng, 84.0);
-    subsolarPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), finalGlobeRotY);
-    subsolarPos.applyAxisAngle(new THREE.Vector3(0, 0, 1), CLASSIC_TILT_RAD);
-    const noonCamPos = subsolarPos.normalize().multiplyScalar(homeDist);
+  const currentRotY = globeMesh.rotation.y;
+  const shortestDeltaY = Math.atan2(Math.sin(rawTargetRotY - currentRotY), Math.cos(rawTargetRotY - currentRotY));
+  const finalGlobeRotY = currentRotY + shortestDeltaY;
 
-    gsap.to(globeMesh.rotation, {
-      y: finalGlobeRotY,
-      duration: 1.2,
-      ease: 'power2.inOut'
-    });
+  gsap.to(globeMesh.rotation, {
+    y: finalGlobeRotY,
+    duration: 1.2,
+    ease: 'power2.inOut',
+    onUpdate: () => {
+      if (globeMode === 'realtime') applySolarLighting();
+    }
+  });
 
-    gsap.to(cloudMesh.rotation, {
-      y: finalGlobeRotY,
-      duration: 1.2,
-      ease: 'power2.inOut'
-    });
+  gsap.to(cloudMesh.rotation, {
+    y: finalGlobeRotY,
+    duration: 1.2,
+    ease: 'power2.inOut'
+  });
 
-    gsap.to(camera.position, {
-      x: noonCamPos.x,
-      y: noonCamPos.y,
-      z: noonCamPos.z,
-      duration: 1.35,
-      ease: 'power2.inOut',
-      onUpdate: () => controls.update()
-    });
+  gsap.to(camera.position, {
+    x: homeCamPos.x,
+    y: homeCamPos.y,
+    z: homeCamPos.z,
+    duration: 1.35,
+    ease: 'power2.inOut',
+    onUpdate: () => controls.update()
+  });
 
-    gsap.to(controls.target, {
-      x: 0,
-      y: 0,
-      z: 0,
-      duration: 1.35,
-      ease: 'power2.inOut'
-    });
-  } else {
-    // Return to UK & Europe centered with classic 23.44° desk-globe tilt
-    const currentRotY = globeMesh.rotation.y;
-    const shortestDeltaY = Math.atan2(Math.sin(UK_CENTER_ROTATION_Y - currentRotY), Math.cos(UK_CENTER_ROTATION_Y - currentRotY));
-    const finalUkRotY = currentRotY + shortestDeltaY;
-
-    gsap.to(globeMesh.rotation, {
-      y: finalUkRotY,
-      duration: 1.2,
-      ease: 'power2.inOut'
-    });
-
-    gsap.to(cloudMesh.rotation, {
-      y: finalUkRotY,
-      duration: 1.2,
-      ease: 'power2.inOut'
-    });
-
-    gsap.to(camera.position, {
-      x: 0,
-      y: 0,
-      z: homeDist,
-      duration: 1.35,
-      ease: 'power2.inOut',
-      onUpdate: () => controls.update()
-    });
-
-    gsap.to(controls.target, {
-      x: 0,
-      y: 0,
-      z: 0,
-      duration: 1.35,
-      ease: 'power2.inOut'
-    });
-  }
+  gsap.to(controls.target, {
+    x: 0,
+    y: 0,
+    z: 0,
+    duration: 1.35,
+    ease: 'power2.inOut'
+  });
 }
 
 export function setPinVisibility(locId, visible) {
@@ -357,14 +352,44 @@ function createMeridianRing() {
   }
 
   const curve = new THREE.CatmullRomCurve3(points, true);
-  const geometry = new THREE.TubeGeometry(curve, 256, 0.14, 6, true);
-  const material = new THREE.MeshBasicMaterial({
-    color: 0xd4af37,
+  const geometry = new THREE.TubeGeometry(curve, 256, 0.11, 6, true);
+  const initialSunDir = sunLight
+    ? sunLight.position.clone().normalize()
+    : new THREE.Vector3(1, 0, 0);
+
+  meridianMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(0xd4af37) },
+      uSunDir: { value: initialSunDir },
+      uDayAlpha: { value: 0.42 },
+      uNightAlpha: { value: 0.16 }
+    },
+    vertexShader: `
+      varying vec3 vWorldPos;
+      void main() {
+        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+        vWorldPos = worldPosition.xyz;
+        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform vec3 uSunDir;
+      uniform float uDayAlpha;
+      uniform float uNightAlpha;
+      varying vec3 vWorldPos;
+      void main() {
+        vec3 n = normalize(vWorldPos);
+        float sunFactor = smoothstep(-0.25, 0.45, dot(n, normalize(uSunDir)));
+        float alpha = mix(uNightAlpha, uDayAlpha, sunFactor);
+        gl_FragColor = vec4(uColor, alpha);
+      }
+    `,
     transparent: true,
-    opacity: 0.72
+    depthWrite: false
   });
 
-  globeMesh.add(new THREE.Mesh(geometry, material));
+  globeMesh.add(new THREE.Mesh(geometry, meridianMaterial));
 }
 
 function createAtmosphereGlow() {
@@ -546,7 +571,10 @@ export function flyToAndOpenLocation(locId, subId = null, callback = null) {
   .to(globeMesh.rotation, {
     y: finalGlobeRotY,
     duration: 1.6,
-    ease: 'power2.inOut'
+    ease: 'power2.inOut',
+    onUpdate: () => {
+      if (globeMode === 'realtime') applySolarLighting();
+    }
   }, 0)
   .to(cloudMesh.rotation, {
     y: finalGlobeRotY,
@@ -622,6 +650,7 @@ function onResize() {
   const homeDist = getHomeDistance();
 
   camera.aspect = nextAspect;
+  applyCameraViewOffset(window.innerWidth, window.innerHeight);
   controls.maxDistance = Math.max(420, homeDist * 1.35);
 
   if ((prevAspect < 1) !== (nextAspect < 1)) {
@@ -635,11 +664,13 @@ function onResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-const clock = new THREE.Clock();
+const timer = new THREE.Timer();
+timer.connect(document);
 
-function animate() {
+function animate(timestamp) {
   requestAnimationFrame(animate);
-  const elapsedTime = clock.getElapsedTime();
+  timer.update(timestamp);
+  const elapsedTime = timer.getElapsed();
 
   if (globeMode === 'drift') {
     if (!isModalOpenState && (Date.now() - lastUserInteraction > 4000)) {
@@ -667,5 +698,15 @@ function animate() {
 
   controls.update();
   updateScreenBadges();
+
+  if (!mastheadEl) mastheadEl = document.querySelector('.atlas-masthead');
+  if (mastheadEl && camera) {
+    const shouldHide = camera.position.length() < 232;
+    if (shouldHide !== isMastheadHidden) {
+      isMastheadHidden = shouldHide;
+      mastheadEl.classList.toggle('is-zoomed-in', shouldHide);
+    }
+  }
+
   renderer.render(scene, camera);
 }
