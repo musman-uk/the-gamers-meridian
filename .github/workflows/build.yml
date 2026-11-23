@@ -52,6 +52,16 @@ jobs:
       - name: Build site with Vite
         run: npm run build
 
+      - name: Generate code.txt snapshot
+        run: node scripts/bundle-code.mjs
+
+      - name: Upload code.txt artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-bundle
+          path: code.txt
+          retention-days: 7
+
       - name: Upload dist artifact
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
