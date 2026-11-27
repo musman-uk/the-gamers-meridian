@@ -30,6 +30,14 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Local Code Bundles and Changes
+code.txt
+*-code.txt
+apply-changes.mjs
+undo-changes.mjs
+.apply-backup/
+code-bundle.txt
+
 # Local Code Snapshots
 code.txt
 *-code.txt
