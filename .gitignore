@@ -38,6 +38,3 @@ undo-changes.mjs
 .apply-backup/
 code-bundle.txt
 
-# Local Code Snapshots
-code.txt
-*-code.txt
