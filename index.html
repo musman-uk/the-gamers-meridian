@@ -27,13 +27,18 @@
   <div id="webgl-container"></div>
   <div id="markers-container"></div>
 
-  <!-- Top-Right Compact Prussian-Blue Sender's Stamp -->
-  <button id="stampToggle" aria-label="Open Sender's Stamp" class="senders-stamp-btn">
-    <span class="stamp-seal" aria-hidden="true">
-      <i class="fa-solid fa-stamp"></i>
-    </span>
-    <span>Sender's Stamp</span>
-  </button>
+  <!-- Top-Right Observatory Controls (Sound Toggle + Sender's Stamp) -->
+  <div class="top-right-controls">
+    <button id="soundToggle" type="button" aria-label="Mute Sound Effects" aria-pressed="false" title="Sound Effects On" class="sound-toggle-btn">
+      <i id="soundToggleIcon" class="fa-solid fa-volume-high" aria-hidden="true"></i>
+    </button>
+    <button id="stampToggle" aria-label="Open Sender's Stamp" class="senders-stamp-btn">
+      <span class="stamp-seal" aria-hidden="true">
+        <i class="fa-solid fa-stamp"></i>
+      </span>
+      <span>Sender's Stamp</span>
+    </button>
+  </div>
 
   <!-- Centered Atlas Masthead -->
   <header class="atlas-masthead">

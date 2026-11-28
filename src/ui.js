@@ -1,3 +1,5 @@
+import { SoundFX } from './sound.js';
+
 const STORAGE_KEY_PINNED = 'gp_pinned_locations_v1';
 const FALLBACK_PHOTO = `${import.meta.env.BASE_URL}textures/default-dispatch.jpg`;
 
@@ -68,8 +70,9 @@ function syncPinStatesToGlobe() {
   }
 }
 
-function setDrawerOpen(bookletDrawer, open) {
+function setDrawerOpen(bookletDrawer, open, playSound = true) {
   if (!bookletDrawer) return;
+  const wasOpen = bookletDrawer.classList.contains('is-open');
   if (open) {
     bookletDrawer.removeAttribute('inert');
     bookletDrawer.setAttribute('aria-hidden', 'false');
@@ -87,10 +90,14 @@ function setDrawerOpen(bookletDrawer, open) {
     bookletDrawer.setAttribute('aria-hidden', 'true');
     bookletDrawer.setAttribute('inert', '');
   }
+  if (playSound && wasOpen !== open) {
+    SoundFX.drawer(open);
+  }
 }
 
-function setStampModalOpen(stampModal, open) {
+function setStampModalOpen(stampModal, open, playSound = true) {
   if (!stampModal) return;
+  const wasOpen = stampModal.classList.contains('is-open');
   if (open) {
     stampModal.removeAttribute('inert');
     stampModal.setAttribute('aria-hidden', 'false');
@@ -108,6 +115,32 @@ function setStampModalOpen(stampModal, open) {
     stampModal.setAttribute('aria-hidden', 'true');
     stampModal.setAttribute('inert', '');
   }
+  if (playSound && wasOpen !== open) {
+    if (open) {
+      SoundFX.click();
+    } else {
+      SoundFX.modalClose();
+    }
+  }
+}
+
+function initSoundToggle() {
+  const soundToggle = document.getElementById('soundToggle');
+  if (!soundToggle) return;
+
+  const syncVisuals = (muted) => {
+    soundToggle.classList.toggle('is-muted', muted);
+    soundToggle.setAttribute('aria-pressed', String(muted));
+    soundToggle.setAttribute('aria-label', muted ? 'Unmute Sound Effects' : 'Mute Sound Effects');
+    soundToggle.title = muted ? 'Sound Effects Off' : 'Sound Effects On';
+  };
+
+  syncVisuals(SoundFX.isMuted());
+
+  soundToggle.onclick = () => {
+    const muted = SoundFX.toggleMute();
+    syncVisuals(muted);
+  };
 }
 
 export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeControls = {}) {
@@ -121,13 +154,14 @@ export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeC
   buildTravelJournalDrawer(gamesCatalog, onFlyToLocation);
   syncPinStatesToGlobe();
   initGlobeRocker();
+  initSoundToggle();
 
   const albumToggle = document.getElementById('albumToggle');
   const bookletDrawer = document.getElementById('bookletDrawer');
   const drawerClose = document.getElementById('drawerClose');
   const webglContainer = document.getElementById('webgl-container');
 
-  setDrawerOpen(bookletDrawer, false);
+  setDrawerOpen(bookletDrawer, false, false);
 
   if (albumToggle) {
     albumToggle.onclick = (e) => {
@@ -149,13 +183,15 @@ export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeC
   const toggleAllPinsBtn = document.getElementById('toggleAllPinsBtn');
   if (toggleAllPinsBtn) {
     toggleAllPinsBtn.onclick = () => {
-      if (pinnedIds.size === allTopLevelLocIds.length) {
-        pinnedIds.clear();
-      } else {
+      const shouldPinAll = pinnedIds.size !== allTopLevelLocIds.length;
+      if (shouldPinAll) {
         pinnedIds = new Set(allTopLevelLocIds);
+      } else {
+        pinnedIds.clear();
       }
       savePinPreferences();
       syncPinStatesToGlobe();
+      SoundFX.pin(shouldPinAll);
     };
   }
 
@@ -163,7 +199,7 @@ export function initUI(gamesCatalog, onFlyToLocation, setGlobeModalState, globeC
   const stampModal = document.getElementById('stampModal');
   const stampClose = document.getElementById('stampClose');
 
-  setStampModalOpen(stampModal, false);
+  setStampModalOpen(stampModal, false, false);
 
   if (stampToggle) {
     stampToggle.onclick = () => setStampModalOpen(stampModal, true);
@@ -236,6 +272,9 @@ function initGlobeRocker() {
   };
 
   const setMode = (mode) => {
+    if (mode !== activeMode) {
+      SoundFX.rocker(mode);
+    }
     activeMode = mode;
     if (btnClassic) btnClassic.classList.toggle('is-active', mode === 'drift');
     if (btnLive) btnLive.classList.toggle('is-active', mode === 'realtime');
@@ -321,12 +360,13 @@ function buildTravelJournalDrawer(gamesCatalog, onFlyToLocation) {
     btn.onclick = () => {
       const locId = btn.getAttribute('data-loc-id');
       const subId = btn.getAttribute('data-sub-id');
+      SoundFX.click();
       if (!pinnedIds.has(locId)) {
         pinnedIds.add(locId);
         savePinPreferences();
         syncPinStatesToGlobe();
       }
-      setDrawerOpen(document.getElementById('bookletDrawer'), false);
+      setDrawerOpen(document.getElementById('bookletDrawer'), false, false);
       onFlyToLocation(locId, subId);
     };
   });
@@ -335,13 +375,15 @@ function buildTravelJournalDrawer(gamesCatalog, onFlyToLocation) {
     chip.onclick = (e) => {
       e.stopPropagation();
       const locId = chip.getAttribute('data-pin-id');
-      if (pinnedIds.has(locId)) {
-        pinnedIds.delete(locId);
-      } else {
+      const nowPinned = !pinnedIds.has(locId);
+      if (nowPinned) {
         pinnedIds.add(locId);
+      } else {
+        pinnedIds.delete(locId);
       }
       savePinPreferences();
       syncPinStatesToGlobe();
+      SoundFX.pin(nowPinned);
     };
   });
 }
@@ -369,7 +411,10 @@ export function openPostcardModal(loc, subId = null) {
     `).join('');
 
     regionalTabs.querySelectorAll('.sub-tab-btn').forEach(tabBtn => {
-      tabBtn.onclick = () => switchSubTab(tabBtn.getAttribute('data-sub-id'));
+      tabBtn.onclick = () => {
+        SoundFX.click();
+        switchSubTab(tabBtn.getAttribute('data-sub-id'));
+      };
     });
 
     switchSubTab(subId || loc.subLocations[0].id);
@@ -395,6 +440,7 @@ export function openPostcardModal(loc, subId = null) {
     });
   }
 
+  SoundFX.flip();
   modal.removeAttribute('inert');
   modal.classList.remove('opacity-0', 'pointer-events-none');
   modal.setAttribute('aria-hidden', 'false');
@@ -478,6 +524,7 @@ function renderCardData(data) {
 }
 
 function flipPostcard() {
+  SoundFX.flip();
   document.getElementById('postcardCard').classList.toggle('rotate-y-180');
 }
 
@@ -485,6 +532,8 @@ function closePostcardModal() {
   const modal = document.getElementById('postcardModal');
   const wrapper = document.getElementById('postcardWrapper');
   const card = document.getElementById('postcardCard');
+
+  const wasOpen = modal && !modal.classList.contains('opacity-0');
 
   if (modal && modal.contains(document.activeElement)) {
     if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function' && document.contains(lastFocusedBeforeModal)) {
@@ -499,6 +548,10 @@ function closePostcardModal() {
   modal.classList.add('opacity-0', 'pointer-events-none');
   modal.setAttribute('aria-hidden', 'true');
   modal.setAttribute('inert', '');
+
+  if (wasOpen) {
+    SoundFX.modalClose();
+  }
 
   if (setGlobeModalStateRef) setGlobeModalStateRef(false);
   setTimeout(() => card.classList.remove('rotate-y-180'), 300);

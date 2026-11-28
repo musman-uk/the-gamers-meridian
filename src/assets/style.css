@@ -267,12 +267,76 @@ html, body {
   background: linear-gradient(to bottom, rgba(212, 175, 55, 0.55), transparent);
 }
 
-/* Top-Right Compact Prussian-Blue & Gold Sender's Stamp */
-.senders-stamp-btn {
+/* Top-Right Observatory Controls Container */
+.top-right-controls {
   position: fixed;
   top: clamp(0.75rem, 2vw, 1.25rem);
   right: clamp(0.75rem, 2vw, 1.25rem);
   z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Compact Observatory Sound Toggle (Directly Left of Sender's Stamp) */
+.sound-toggle-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  background: rgba(10, 14, 23, 0.9);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #d4af37;
+  font-size: 0.74rem;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  border-radius: 4px;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sound-toggle-btn:hover {
+  background: rgba(24, 33, 54, 0.96);
+  color: #fde68a;
+  border-color: rgba(212, 175, 55, 0.68);
+  box-shadow: 0 10px 24px rgba(212, 175, 55, 0.2);
+}
+
+.sound-toggle-btn.is-muted {
+  background: rgba(10, 14, 23, 0.78);
+  color: #64748b;
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.sound-toggle-btn.is-muted::after {
+  content: '';
+  position: absolute;
+  width: 19px;
+  height: 1.75px;
+  background-color: #94a3b8;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 1px rgba(10, 14, 23, 0.92);
+  transform: rotate(-45deg);
+  pointer-events: none;
+  transition: background-color 0.22s ease;
+}
+
+.sound-toggle-btn.is-muted:hover {
+  color: #cbd5e1;
+  border-color: rgba(212, 175, 55, 0.45);
+}
+
+.sound-toggle-btn.is-muted:hover::after {
+  background-color: #e2e8f0;
+}
+
+/* Top-Right Compact Prussian-Blue & Gold Sender's Stamp */
+.senders-stamp-btn {
   display: flex;
   align-items: center;
   gap: 7px;
