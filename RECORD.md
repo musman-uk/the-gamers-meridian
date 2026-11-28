@@ -63,7 +63,7 @@
 
 ## 4. Version History
 
-### v0.0.0 - Unpublished
+### v1.0.0 - Published
 - Initial 3D WebGL globe implementation using Three.js and Vite  
 - Created catalog entries for Assassin's Creed (1 & 2) and Uncharted (1 & 2)  
 - Implemented Travel Journal drawer and 180° flipping postcard modal interface  
